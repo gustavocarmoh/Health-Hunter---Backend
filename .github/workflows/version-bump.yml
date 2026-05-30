@@ -1,0 +1,139 @@
+name: Version Bump
+
+# Atualiza versão automaticamente a cada push para main/master
+on:
+  push:
+    branches:
+      - main
+      - master
+    # Ignora pushes de commits do próprio workflow de version bump
+    # para evitar loop infinito
+    paths-ignore:
+      - 'package.json'
+
+# Garante que apenas um bump por vez
+concurrency:
+  group: version-bump-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bump-version:
+    name: 📌 Bump Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permite fazer commit e push
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history para análise de commits
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Get current version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Analyze commits for bump type
+        id: analyze
+        run: |
+          # Pega os commits desde o último push (últimas 2 linhas de log)
+          COMMITS=$(git log -1 --pretty=%B)
+          echo "Último commit:"
+          echo "$COMMITS"
+
+          # Determina tipo de bump baseado em palavras-chave no commit message
+          if echo "$COMMITS" | grep -iE "^(feat|feature|add|new)(\(.*\))?:" > /dev/null; then
+            echo "bump=minor" >> "$GITHUB_OUTPUT"
+            echo "📈 Detectado: Nova feature → Bump MINOR"
+          elif echo "$COMMITS" | grep -iE "(breaking change|BREAKING CHANGE)" > /dev/null; then
+            echo "bump=major" >> "$GITHUB_OUTPUT"
+            echo "🔴 Detectado: Breaking change → Bump MAJOR"
+          else
+            echo "bump=patch" >> "$GITHUB_OUTPUT"
+            echo "🔧 Detectado: Bug fix/chore → Bump PATCH"
+          fi
+
+      - name: Bump version
+        id: new-version
+        env:
+          BUMP_TYPE: ${{ steps.analyze.outputs.bump }}
+        run: |
+          # Instala ferramentas de semver
+          npm install -g semver
+
+          CURRENT=$(node -p "require('./package.json').version")
+          NEW_VERSION=$(semver -i $BUMP_TYPE $CURRENT)
+
+          echo "new=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo ""
+          echo "Versão antiga: $CURRENT"
+          echo "Versão nova: $NEW_VERSION"
+          echo "Tipo de bump: ${{ steps.analyze.outputs.bump }}"
+          echo ""
+
+          # Atualiza package.json
+          npm version $NEW_VERSION --no-git-tag-version
+
+          if [ -f package-lock.json ]; then
+            npm install --package-lock-only
+          fi
+
+      - name: Commit version bump
+        id: commit
+        run: |
+          git add package.json
+          if [ -f package-lock.json ]; then
+            git add package-lock.json
+          fi
+
+          # Verifica se há mudanças
+          if git diff-index --quiet HEAD --; then
+            echo "no-changes=true" >> "$GITHUB_OUTPUT"
+            echo "ℹ️  Nenhuma mudança no versionamento"
+          else
+            git commit -m "chore(release): bump version to ${{ steps.new-version.outputs.new }}"
+            echo "no-changes=false" >> "$GITHUB_OUTPUT"
+            echo "✅ Commit de versão criado"
+          fi
+
+      - name: Push version bump
+        if: steps.commit.outputs.no-changes == 'false'
+        run: |
+          git push origin ${{ github.ref_name }}
+          echo "🚀 Versão atualizada e enviada para ${{ github.ref_name }}"
+
+      - name: Create release tag
+        if: steps.commit.outputs.no-changes == 'false'
+        run: |
+          VERSION=${{ steps.new-version.outputs.new }}
+          git tag -a v$VERSION -m "Release v$VERSION"
+          git push origin v$VERSION
+          echo "🏷️  Tag criada: v$VERSION"
+
+      - name: GitHub Step Summary
+        if: steps.commit.outputs.no-changes == 'false'
+        run: |
+          echo "### ✅ Versão Atualizada" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Campo | Valor |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Versão anterior | \`${{ steps.current-version.outputs.current }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Nova versão | \`${{ steps.new-version.outputs.new }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Tipo de bump | \`${{ steps.analyze.outputs.bump }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Tag | \`v${{ steps.new-version.outputs.new }}\` |" >> "$GITHUB_STEP_SUMMARY"

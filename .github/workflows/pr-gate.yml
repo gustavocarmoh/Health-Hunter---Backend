@@ -1,0 +1,42 @@
+name: PR Gate — RC obrigatório para main/master
+
+# Roda em todo PR aberto, sincronizado ou reaberto contra main/master
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate-rc-branch:
+    name: Verificar branch RC
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checar nome da branch de origem
+        run: |
+          BRANCH="${{ github.head_ref }}"
+
+          # Padrões aceitos:
+          #   rc/v1.2.3
+          #   rc/1.2.3
+          #   rc/sprint-42
+          #   release/v1.2.3
+          #   release/1.2.3
+          if [[ "$BRANCH" =~ ^rc/ ]] || [[ "$BRANCH" =~ ^release/ ]]; then
+            echo "✅ Branch RC válida: $BRANCH"
+            exit 0
+          fi
+
+          echo "❌ PRs para main/master só são permitidos a partir de branches RC."
+          echo ""
+          echo "   Branch atual : $BRANCH"
+          echo "   Padrões aceitos: rc/* · release/*"
+          echo ""
+          echo "   Exemplos válidos:"
+          echo "     rc/v1.2.0"
+          echo "     rc/sprint-10"
+          echo "     release/v1.2.0"
+          echo ""
+          echo "   Crie a branch de release e abra o PR a partir dela."
+          exit 1
