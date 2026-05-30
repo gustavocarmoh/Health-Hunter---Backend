@@ -89,7 +89,7 @@ jobs:
           npm version $NEW_VERSION --no-git-tag-version
 
           if [ -f package-lock.json ]; then
-            npm install --package-lock-only
+            npm install --package-lock-only --legacy-peer-deps
           fi
 
       - name: Commit version bump
