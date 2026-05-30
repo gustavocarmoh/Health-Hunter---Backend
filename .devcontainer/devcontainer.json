@@ -1,0 +1,140 @@
+{
+  "name": "Health Hunter BFF",
+
+  // Usa o docker-compose.yml existente (postgres + redis) e estende
+  // com o docker-compose.devcontainer.yml que adiciona o serviço devcontainer
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.devcontainer.yml"],
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "node",
+
+  // ── Portas expostas ────────────────────────────────────────────────────────
+  "forwardPorts": [3000, 5432, 6379, 9229],
+  "portsAttributes": {
+    "3000": {
+      "label": "BFF API",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    },
+    "9229": {
+      "label": "Node.js Debugger",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // ── Ciclo de vida ──────────────────────────────────────────────────────────
+  // Copia .env.example → .env (apenas se .env ainda não existir), instala deps e
+  // configura o git com husky (prepare = git init && husky)
+  "postCreateCommand": "[ ! -f .env ] && cp .env.example .env; npm install; chmod +x .husky/pre-commit .husky/commit-msg",
+
+  // ── Customizações VS Code ──────────────────────────────────────────────────
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // TypeScript / NestJS
+        "ms-vscode.vscode-typescript-next",
+        "ashinzekene.nestjs",
+        "christian-kohler.path-intellisense",
+
+        // Qualidade de código
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "streetsidesoftware.code-spell-checker",
+
+        // Banco de dados & cache
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "cweijan.vscode-redis-client",
+
+        // API & HTTP
+        "rangav.vscode-thunder-client",
+
+        // Docker & infraestrutura
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "mikestead.dotenv",
+
+        // Git
+        "eamodio.gitlens",
+
+        // IA
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ],
+      "settings": {
+        // Formatação automática ao salvar
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+
+        // Usar o TypeScript do workspace, não o bundled do VS Code
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+
+        // ESLint
+        "eslint.validate": ["typescript"],
+
+        // Esconder pastas de build/deps na árvore de arquivos
+        "files.exclude": {
+          "**/node_modules": true,
+          "**/dist": true,
+          "**/.git": true
+        },
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/dist": true
+        },
+
+        // SQLTools — conexão pré-configurada com o PostgreSQL do devcontainer
+        "sqltools.connections": [
+          {
+            "name": "health-hunter-dev",
+            "driver": "PostgreSQL",
+            "server": "localhost",
+            "port": 5432,
+            "database": "health_hunter",
+            "username": "postgres",
+            "password": "postgres"
+          }
+        ]
+      },
+
+      // Configuração de debug do Node.js (attach ao processo NestJS)
+      "launch": {
+        "version": "0.2.0",
+        "configurations": [
+          {
+            "name": "NestJS: Debug (attach)",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "restart": true,
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "skipFiles": ["<node_internals>/**"]
+          },
+          {
+            "name": "NestJS: Start + Debug",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "start:debug"],
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "skipFiles": ["<node_internals>/**"],
+            "console": "integratedTerminal"
+          }
+        ]
+      }
+    }
+  }
+}

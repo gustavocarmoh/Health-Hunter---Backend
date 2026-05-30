@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Serviço do devcontainer — VS Code abre o terminal aqui
+  devcontainer:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      # Workspace: monta o projeto no container
+      - .:/workspace:cached
+      # Isola node_modules em volume próprio — evita conflitos de bindings
+      # entre o sistema operacional do host e o Alpine Linux do container
+      - node_modules:/workspace/node_modules
+    command: sleep infinity
+    working_dir: /workspace
+    environment:
+      # Substitui os valores localhost do .env.example pelos nomes dos serviços Docker
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: health_hunter
+      DB_SSL: "false"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      # Secrets de desenvolvimento — alterar em staging/produção
+      JWT_SECRET: dev-jwt-secret-deve-ter-pelo-menos-32-caracteres
+      JWT_REFRESH_SECRET: dev-refresh-secret-deve-ter-pelo-menos-32-caracteres
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  node_modules:

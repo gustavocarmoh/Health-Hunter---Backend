@@ -1,0 +1,48 @@
+# Dependências e cache
+node_modules
+npm-debug.log*
+
+# Build output (gerado dentro do container, não do host)
+dist
+coverage
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Devcontainer e Docker local
+.devcontainer
+docker-compose*.yml
+
+# Configurações de editor/IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Testes
+**/*.spec.ts
+**/*.e2e-spec.ts
+test/
+jest.config.*
+
+# Variáveis de ambiente locais (nunca enviar secrets para a imagem)
+.env
+.env.*
+!.env.example
+
+# CI/CD
+.github
+
+# Documentação e arquivos de projeto
+*.md
+CLAUDE.md
+CHANGELOG*
+
+# Arquivos temporários e de sistema
+*.log
+.DS_Store
+Thumbs.db
+tmp/
+temp/

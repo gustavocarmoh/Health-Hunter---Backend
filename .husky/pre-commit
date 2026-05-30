@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+echo "🔍 Verificando arquivos staged (ESLint + Prettier)..."
+npx lint-staged
+
+echo ""
+echo "🧪 Executando testes unitários..."
+npx jest --passWithNoTests --forceExit --silent
+
+echo ""
+echo "✅ pre-commit concluído com sucesso"
