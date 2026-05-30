@@ -85,8 +85,8 @@ jobs:
           echo "Tipo de bump: ${{ steps.analyze.outputs.bump }}"
           echo ""
 
-          # Atualiza package.json
-          npm version $NEW_VERSION --no-git-tag-version
+          # Atualiza package.json (sem rodar scripts como prepare/husky)
+          npm version $NEW_VERSION --no-git-tag-version --no-scripts
 
           if [ -f package-lock.json ]; then
             npm install --package-lock-only --legacy-peer-deps
