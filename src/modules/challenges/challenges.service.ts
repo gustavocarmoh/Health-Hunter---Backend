@@ -144,4 +144,21 @@ export class ChallengesService {
     if (!challenge) throw new NotFoundException('Challenge not found.')
     return challenge
   }
+
+  async deleteChallenge(challengeId: string) {
+    const challenge = await this.challengeRepository.findById(challengeId)
+    if (!challenge) throw new NotFoundException('Challenge not found.')
+
+    const participations = await this.participationRepository.findByChallengeId(challengeId)
+    for (const participation of participations) {
+      if (participation.status === 'ACTIVE') {
+        await this.participationRepository.abandon(participation.id)
+      }
+    }
+
+    await this.challengeRepository.delete(challengeId)
+    await this.redisService.invalidatePattern('challenges:*')
+
+    return { message: 'Challenge deleted successfully.' }
+  }
 }

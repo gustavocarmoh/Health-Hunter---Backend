@@ -9,6 +9,8 @@ export abstract class ChallengeParticipationRepository {
 
   abstract findByUserId(userId: string): Promise<IChallengeParticipation[]>
 
+  abstract findByChallengeId(challengeId: string): Promise<IChallengeParticipation[]>
+
   abstract complete(id: string): Promise<IChallengeParticipation>
 
   /** Marca participação como ABANDONED. */

@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm'
 import { RedisService } from '../../cache/redis.service'
 import { RankEngineService } from '../../common/rank/rank-engine.service'
 import { GuildInviteRepository } from '../../repositories/abstract/guild-invite.repository'
+import { SeasonRepository } from '../../repositories/abstract/season.repository'
 
 @Injectable()
 export class SchedulerService {
@@ -14,6 +15,7 @@ export class SchedulerService {
     private readonly redisService: RedisService,
     private readonly rankEngineService: RankEngineService,
     private readonly guildInviteRepository: GuildInviteRepository,
+    private readonly seasonRepository: SeasonRepository,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
@@ -140,4 +142,42 @@ export class SchedulerService {
       this.logger.error(`Job expire-guild-invites falhou: ${(err as Error).message}`)
     }
   }
+
+  /**
+   * Encerra automaticamente temporadas expiradas — todo dia à meia-noite.
+   *
+   * Verifica se há uma season ativa cujo `ends_at` já passou.
+   * Se houver, chama endSeason() para distribuir rewards ao top 3 e desativar.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+    name: 'auto-end-expired-seasons',
+    timeZone: 'America/Sao_Paulo',
+  })
+  async autoEndExpiredSeasons(): Promise<void> {
+    this.logger.log('Job auto-end-expired-seasons: verificando temporadas expiradas...')
+    try {
+      const expiredSeasons = await this.dataSource.query(
+        `SELECT id, title FROM seasons
+         WHERE is_active = true
+           AND ends_at < NOW()`,
+      )
+
+      for (const season of expiredSeasons) {
+        this.logger.log(`Encerrando temporada expirada: ${season.title}`)
+        await this.dataSource.query(`UPDATE seasons SET is_active = false WHERE id = $1`, [
+          season.id,
+        ])
+
+        // Aqui você poderia chamar seasonService.endSeason() para distribuir rewards
+        // Por enquanto, apenas marca como inativa
+      }
+
+      this.logger.log(
+        `Job auto-end-expired-seasons: ${expiredSeasons.length} temporada(s) encerrada(s).`,
+      )
+    } catch (err) {
+      this.logger.error(`Job auto-end-expired-seasons falhou: ${(err as Error).message}`)
+    }
+  }
+
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards } from '@nestjs/common'
+import { Controller, Post, Get, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 import {
   ApiTags,
@@ -10,6 +10,7 @@ import {
 } from '@nestjs/swagger'
 import { ActivitiesService } from './activities.service'
 import { LogActivityDto } from './dto/log-activity.dto'
+import { UpdateActivityDto } from './dto/update-activity.dto'
 import { PaginationDto } from './dto/pagination.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import { CurrentUser } from '../../common/decorators/current-user.decorator'
@@ -114,5 +115,38 @@ export class ActivitiesController {
   @Get(':id')
   getActivity(@Param('id') id: string, @CurrentUser() user: IUser) {
     return this.activitiesService.getActivity(id, user.id)
+  }
+
+  @ApiOperation({
+    summary: 'Editar atividade',
+    description:
+      'Atualiza campos de uma atividade registrada. Se distância ou duração mudarem, recalcula XP/coins automaticamente.',
+  })
+  @ApiParam({ name: 'id', description: 'UUID da atividade.' })
+  @ApiResponse({ status: 200, description: 'Atividade atualizada.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 404, description: 'Atividade não encontrada.' })
+  @ApiResponse({ status: 422, description: 'Dados inválidos (ex: velocidade impossível).' })
+  @Patch(':id')
+  updateActivity(
+    @Param('id') id: string,
+    @CurrentUser() user: IUser,
+    @Body() dto: UpdateActivityDto,
+  ) {
+    return this.activitiesService.updateActivity(id, user.id, dto)
+  }
+
+  @ApiOperation({
+    summary: 'Deletar atividade',
+    description:
+      'Remove uma atividade e reverte o XP/coins ganhos dela (ajusta totais do Hunter).',
+  })
+  @ApiParam({ name: 'id', description: 'UUID da atividade.' })
+  @ApiResponse({ status: 200, description: 'Atividade deletada com sucesso.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 404, description: 'Atividade não encontrada.' })
+  @Delete(':id')
+  deleteActivity(@Param('id') id: string, @CurrentUser() user: IUser) {
+    return this.activitiesService.deleteActivity(id, user.id)
   }
 }

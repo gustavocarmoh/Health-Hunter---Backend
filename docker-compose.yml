@@ -34,6 +34,48 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: health-hunter-ollama
+    restart: unless-stopped
+    ports:
+      - '11434:11434'
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+    volumes:
+      - ollama_data:/root/.ollama
+    pull_policy: always
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: health-hunter-backend
+    restart: unless-stopped
+    # '0.0.0.0:3000' publica a porta em todas as interfaces de rede do host,
+    # permitindo acesso via IP local (ex: app mobile no mesmo Wi-Fi).
+    ports:
+      - '0.0.0.0:3000:3000'
+    env_file:
+      - .env
+    environment:
+      # Sobrescreve os hosts do .env (localhost) para os nomes dos serviços
+      # na rede interna do Docker Compose.
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      OLLAMA_HOST: http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+
 volumes:
   postgres_data:
   redis_data:
+  ollama_data:

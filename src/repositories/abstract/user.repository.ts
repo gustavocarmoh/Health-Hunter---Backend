@@ -85,6 +85,9 @@ export abstract class UserRepository {
   /** Busca múltiplos usuários por lista de IDs. */
   abstract findByIds(ids: string[]): Promise<IUser[]>
 
+  /** Busca hunters por nome contendo a query (case-insensitive, excluindo deletados). */
+  abstract findByNameContains(query: string, limit: number): Promise<IUser[]>
+
   /** Conta hunters ativos (não deletados). */
   abstract countActive(): Promise<number>
 

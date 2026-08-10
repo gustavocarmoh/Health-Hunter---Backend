@@ -16,4 +16,7 @@ export abstract class ChallengeRepository {
 
   /** Atualiza campos de um desafio. */
   abstract update(id: string, data: Partial<IChallenge>): Promise<IChallenge | null>
+
+  /** Deleta um desafio. */
+  abstract delete(id: string): Promise<void>
 }

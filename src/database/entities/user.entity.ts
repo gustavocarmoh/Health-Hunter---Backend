@@ -30,6 +30,24 @@ export class UserEntity implements IUser {
   @Column({ type: 'int', default: 0 })
   coins: number
 
+  @Column({ type: 'int', default: 0 })
+  stat_points_available: number
+
+  @Column({ type: 'int', default: 0 })
+  strength: number
+
+  @Column({ type: 'int', default: 0 })
+  intel: number
+
+  @Column({ type: 'int', default: 0 })
+  vitality: number
+
+  @Column({ type: 'int', default: 0 })
+  sense: number
+
+  @Column({ type: 'int', default: 0 })
+  agility: number
+
   @Column({ type: 'enum', enum: LifestyleType, default: LifestyleType.CASUAL })
   lifestyle: LifestyleType
 

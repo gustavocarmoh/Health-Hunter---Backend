@@ -5,6 +5,7 @@ import { UserRepository } from '../../repositories/abstract/user.repository'
 import { RedisService } from '../../cache/redis.service'
 import { RankEngineService } from '../../common/rank/rank-engine.service'
 import { LogActivityDto } from './dto/log-activity.dto'
+import { UpdateActivityDto } from './dto/update-activity.dto'
 import { RANK_XP_MULTIPLIERS } from '../../common/enums/rank.enum'
 
 const XP_BASE_PER_ACTIVITY = 100
@@ -272,5 +273,82 @@ export class ActivitiesService {
       current_streak: currentStreak,
       best_streak: bestStreak,
     }
+  }
+
+  async updateActivity(id: string, userId: string, dto: UpdateActivityDto) {
+    const activity = await this.activityRepository.findById(id)
+    if (!activity || activity.user_id !== userId) {
+      throw new NotFoundException('Activity not found.')
+    }
+
+    const updatedData: any = {}
+    if (dto.distancia_m !== undefined) updatedData.distancia_m = dto.distancia_m
+    if (dto.duracao_seg !== undefined) updatedData.duracao_seg = dto.duracao_seg
+    if (dto.tipo_exercicio !== undefined) updatedData.tipo_exercicio = dto.tipo_exercicio
+    if (dto.coordenadas_gps !== undefined) updatedData.coordenadas_gps = dto.coordenadas_gps
+    if (dto.bpm_medio !== undefined) updatedData.bpm_medio = dto.bpm_medio
+
+    // If distance or duration changed, recalculate XP based on new values
+    if (
+      (dto.distancia_m !== undefined || dto.duracao_seg !== undefined) &&
+      dto.distancia_m &&
+      dto.duracao_seg
+    ) {
+      const speedKmh = dto.distancia_m / 1000 / (dto.duracao_seg / 3600)
+      if (speedKmh > MAX_SPEED_KMH) {
+        throw new BadRequestException(
+          `Impossible speed detected (${speedKmh.toFixed(1)} km/h). Activity rejected.`,
+        )
+      }
+
+      const user = await this.userRepository.findById(userId)
+      if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+      const multiplier = RANK_XP_MULTIPLIERS[user.rank_level]
+      const new_xp = Math.round(XP_BASE_PER_ACTIVITY * multiplier)
+      const new_coins = Math.round(COINS_BASE_PER_ACTIVITY * multiplier)
+
+      const xpDiff = new_xp - activity.xp_gained
+      const coinsDiff = new_coins - activity.coins_gained
+
+      updatedData.xp_gained = new_xp
+      updatedData.coins_gained = new_coins
+
+      await this.userRepository.update(userId, {
+        xp: user.xp + xpDiff,
+        coins: user.coins + coinsDiff,
+      })
+    }
+
+    const updated = await this.activityRepository.update(id, updatedData)
+
+    // Invalidate caches
+    await this.redisService.del(`hunter:profile:${userId}`)
+    await this.redisService.invalidatePattern('leaderboard:*')
+
+    return updated
+  }
+
+  async deleteActivity(id: string, userId: string) {
+    const activity = await this.activityRepository.findById(id)
+    if (!activity || activity.user_id !== userId) {
+      throw new NotFoundException('Activity not found.')
+    }
+
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    // Reverse the XP and coins gained from this activity
+    const newXp = Math.max(0, user.xp - activity.xp_gained)
+    const newCoins = Math.max(0, user.coins - activity.coins_gained)
+
+    await this.userRepository.update(userId, { xp: newXp, coins: newCoins })
+    await this.activityRepository.delete(id)
+
+    // Invalidate caches
+    await this.redisService.del(`hunter:profile:${userId}`)
+    await this.redisService.invalidatePattern('leaderboard:*')
+
+    return { message: 'Activity deleted successfully.' }
   }
 }

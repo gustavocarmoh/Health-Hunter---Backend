@@ -165,6 +165,32 @@ export class HuntersController {
   }
 
   @ApiOperation({
+    summary: 'Amigos do Hunter autenticado',
+    description: 'Lista todos os hunters que o usuário autenticado está seguindo (seus amigos).',
+  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 50 })
+  @ApiResponse({ status: 200, description: 'Lista de amigos.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @Get('friends')
+  getFriends(@CurrentUser() user: IUser, @Query('page') page = 1, @Query('limit') limit = 50) {
+    return this.huntersService.getFriends(user.id, Number(page), Number(limit))
+  }
+
+  @ApiOperation({
+    summary: 'Buscar hunters por nome',
+    description: 'Pesquisa hunters que combinam com o nome fornecido. Mostra se já está seguindo cada um.',
+  })
+  @ApiQuery({ name: 'q', required: true, description: 'Termo de busca (mínimo 2 caracteres)' })
+  @ApiQuery({ name: 'limit', required: false, example: 20 })
+  @ApiResponse({ status: 200, description: 'Resultados da busca.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @Get('search')
+  searchHunters(@CurrentUser() user: IUser, @Query('q') q: string, @Query('limit') limit = 20) {
+    return this.huntersService.searchHunters(user.id, q, Number(limit))
+  }
+
+  @ApiOperation({
     summary: 'Sugestões de hunters para seguir',
     description: 'Retorna hunters da mesma região e rank que o Hunter ainda não segue.',
   })
@@ -174,6 +200,18 @@ export class HuntersController {
   @Get('suggested')
   getSuggested(@CurrentUser() user: IUser, @Query('limit') limit = 10) {
     return this.huntersService.getSuggested(user.id, Number(limit))
+  }
+
+  @ApiOperation({
+    summary: 'Distribuir ponto de atributo',
+    description: 'Distribui um ponto disponível em um atributo específico (strength, intelligence, vitality, sense, agility).',
+  })
+  @ApiResponse({ status: 200, description: 'Ponto distribuído com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Não há pontos disponíveis.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @Post('stats/allocate')
+  allocateStat(@CurrentUser() user: IUser, @Body() body: { attribute: string }) {
+    return this.huntersService.allocateStat(user.id, body.attribute)
   }
 
   @ApiOperation({

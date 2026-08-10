@@ -127,6 +127,16 @@ export class TypeOrmUserRepository extends UserRepository {
       .getMany()
   }
 
+  async findByNameContains(query: string, limit: number): Promise<IUser[]> {
+    return this.repo
+      .createQueryBuilder('u')
+      .where('LOWER(u.name) LIKE LOWER(:query)', { query: `%${query}%` })
+      .andWhere('u.is_deleted = false')
+      .orderBy('u.xp', 'DESC')
+      .limit(Math.min(limit, 100))
+      .getMany()
+  }
+
   async countActive(): Promise<number> {
     return this.repo.count({ where: { is_deleted: false } })
   }

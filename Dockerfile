@@ -9,7 +9,7 @@ WORKDIR /app
 # Copia apenas os manifests primeiro para aproveitar o cache de camadas do Docker.
 # A camada de npm ci só é refeita quando package*.json muda.
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Copia o restante do código-fonte
 COPY . .

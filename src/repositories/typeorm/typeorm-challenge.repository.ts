@@ -39,4 +39,8 @@ export class TypeOrmChallengeRepository extends ChallengeRepository {
     await this.repo.update(id, data as Partial<ChallengeEntity>)
     return this.repo.findOne({ where: { id } })
   }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id)
+  }
 }

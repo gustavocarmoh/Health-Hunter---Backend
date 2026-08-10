@@ -8,4 +8,4 @@ import { RepositoriesModule } from '../../repositories/repositories.module'
   imports: [ScheduleModule.forRoot(), TypeOrmModule.forFeature([]), RepositoriesModule],
   providers: [SchedulerService],
 })
-export class SchedulerModule {}
+export class SchedulerModule { }

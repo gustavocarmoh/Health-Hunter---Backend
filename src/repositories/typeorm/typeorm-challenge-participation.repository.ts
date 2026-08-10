@@ -34,6 +34,13 @@ export class TypeOrmChallengeParticipationRepository extends ChallengeParticipat
     })
   }
 
+  async findByChallengeId(challengeId: string): Promise<IChallengeParticipation[]> {
+    return this.repo.find({
+      where: { challenge_id: challengeId },
+      order: { joined_at: 'DESC' },
+    })
+  }
+
   async complete(id: string): Promise<IChallengeParticipation> {
     await this.repo.update(id, {
       status: 'COMPLETED',

@@ -180,6 +180,7 @@ export class AdminService {
       starts_at: new Date(dto.starts_at),
       ends_at: new Date(dto.ends_at),
       is_active: true,
+      xp_cap_per_hunter: null,
     })
 
     await this.auditLogRepository.create({

@@ -16,6 +16,9 @@ import { BodyMeasurementRepository } from './abstract/body-measurement.repositor
 import { GuildRepository } from './abstract/guild.repository'
 import { GuildMemberRepository } from './abstract/guild-member.repository'
 import { GuildInviteRepository } from './abstract/guild-invite.repository'
+import { AiConversationRepository } from './abstract/ai-conversation.repository'
+import { AiMessageRepository } from './abstract/ai-message.repository'
+import { DailyMissionRepository } from './abstract/daily-mission.repository'
 import { TypeOrmUserRepository } from './typeorm/typeorm-user.repository'
 import { TypeOrmActivityRepository } from './typeorm/typeorm-activity.repository'
 import { TypeOrmEventRepository } from './typeorm/typeorm-event.repository'
@@ -32,6 +35,9 @@ import { TypeOrmBodyMeasurementRepository } from './typeorm/typeorm-body-measure
 import { TypeOrmGuildRepository } from './typeorm/typeorm-guild.repository'
 import { TypeOrmGuildMemberRepository } from './typeorm/typeorm-guild-member.repository'
 import { TypeOrmGuildInviteRepository } from './typeorm/typeorm-guild-invite.repository'
+import { TypeOrmAiConversationRepository } from './typeorm/typeorm-ai-conversation.repository'
+import { TypeOrmAiMessageRepository } from './typeorm/typeorm-ai-message.repository'
+import { TypeOrmDailyMissionRepository } from './typeorm/typeorm-daily-mission.repository'
 import { UserEntity } from '../database/entities/user.entity'
 import { ActivityLogEntity } from '../database/entities/activity-log.entity'
 import { EventEntity } from '../database/entities/event.entity'
@@ -49,6 +55,9 @@ import { BodyMeasurementEntity } from '../database/entities/body-measurement.ent
 import { GuildEntity } from '../database/entities/guild.entity'
 import { GuildMemberEntity } from '../database/entities/guild-member.entity'
 import { GuildInviteEntity } from '../database/entities/guild-invite.entity'
+import { AiConversationEntity } from '../database/entities/ai-conversation.entity'
+import { AiMessageEntity } from '../database/entities/ai-message.entity'
+import { DailyMission } from '../database/entities/daily-mission.entity'
 
 @Module({
   imports: [
@@ -70,6 +79,9 @@ import { GuildInviteEntity } from '../database/entities/guild-invite.entity'
       GuildEntity,
       GuildMemberEntity,
       GuildInviteEntity,
+      AiConversationEntity,
+      AiMessageEntity,
+      DailyMission,
     ]),
   ],
   providers: [
@@ -98,6 +110,9 @@ import { GuildInviteEntity } from '../database/entities/guild-invite.entity'
     { provide: GuildRepository, useClass: TypeOrmGuildRepository },
     { provide: GuildMemberRepository, useClass: TypeOrmGuildMemberRepository },
     { provide: GuildInviteRepository, useClass: TypeOrmGuildInviteRepository },
+    { provide: AiConversationRepository, useClass: TypeOrmAiConversationRepository },
+    { provide: AiMessageRepository, useClass: TypeOrmAiMessageRepository },
+    { provide: DailyMissionRepository, useClass: TypeOrmDailyMissionRepository },
   ],
   exports: [
     UserRepository,
@@ -116,6 +131,9 @@ import { GuildInviteEntity } from '../database/entities/guild-invite.entity'
     GuildRepository,
     GuildMemberRepository,
     GuildInviteRepository,
+    AiConversationRepository,
+    AiMessageRepository,
+    DailyMissionRepository,
   ],
 })
 export class RepositoriesModule {}

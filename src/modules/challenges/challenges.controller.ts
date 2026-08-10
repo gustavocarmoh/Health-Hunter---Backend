@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Body } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
 import { ChallengesService } from './challenges.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
@@ -107,5 +107,17 @@ export class ChallengesController {
   @Get(':id')
   getChallenge(@Param('id') id: string) {
     return this.challengesService.getChallenge(id)
+  }
+
+  @ApiOperation({
+    summary: 'Deletar desafio',
+    description: 'Remove um desafio (admin only). Todas as participações ativas são marcadas como ABANDONED.',
+  })
+  @ApiParam({ name: 'id', description: 'UUID do desafio.' })
+  @ApiResponse({ status: 200, description: 'Desafio deletado.' })
+  @ApiResponse({ status: 404, description: 'Desafio não encontrado.' })
+  @Delete(':id')
+  deleteChallenge(@Param('id') id: string) {
+    return this.challengesService.deleteChallenge(id)
   }
 }

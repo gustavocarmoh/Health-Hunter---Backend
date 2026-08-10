@@ -38,6 +38,22 @@ export class GuildsController {
   }
 
   /**
+   * Lista os membros da guilda do hunter autenticado.
+   *
+   * @returns Array de membros da guilda ou [] se não pertencer a nenhuma
+   */
+  @ApiOperation({
+    summary: 'Membros da minha guilda',
+    description:
+      'Retorna lista de membros da guilda do hunter autenticado. Retorna [] se não pertencer a nenhuma.',
+  })
+  @ApiResponse({ status: 200, description: 'Lista de membros da guilda.' })
+  @Get('my/members')
+  getMyGuildMembers(@CurrentUser() user: IUser) {
+    return this.guildsService.getMyGuildMembers(user.id)
+  }
+
+  /**
    * Lista os convites pendentes endereçados ao hunter autenticado.
    * Declarado antes de /:id para evitar conflito de rotas.
    *
@@ -51,6 +67,27 @@ export class GuildsController {
   @Get('invites')
   getMyInvites(@CurrentUser() user: IUser) {
     return this.guildsService.getMyInvites(user.id)
+  }
+
+  /**
+   * Sai da guilda do hunter autenticado.
+   * O MASTER não pode sair sem transferir a liderança antes.
+   *
+   * @returns Confirmação de saída
+   */
+  @ApiOperation({
+    summary: 'Sair da guilda',
+    description:
+      'Remove o hunter autenticado da guilda. O MASTER não pode sair sem transferir a liderança.',
+  })
+  @ApiResponse({ status: 200, description: 'Saiu da guilda.' })
+  @ApiResponse({
+    status: 400,
+    description: 'MASTER não pode sair diretamente.',
+  })
+  @Delete('my/leave')
+  leaveMyGuild(@CurrentUser() user: IUser) {
+    return this.guildsService.leaveGuild(user.id)
   }
 
   /**
@@ -216,6 +253,14 @@ export class GuildsController {
     @Body() body: { user_id: string },
   ) {
     return this.guildsService.inviteMember(id, user.id, body.user_id)
+  }
+
+  /**
+   * Entra em uma guilda pública.
+   */
+  @Post(':id/join')
+  joinGuild(@Param('id') id: string, @CurrentUser() user: IUser) {
+    return this.guildsService.joinGuild(id, user.id)
   }
 
   /**

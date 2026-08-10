@@ -11,6 +11,12 @@ export interface IUser {
   rank_level: HunterRank
   xp: number
   coins: number
+  stat_points_available: number
+  strength: number
+  intel: number
+  vitality: number
+  sense: number
+  agility: number
   lifestyle: LifestyleType
   region_state: string
   region_country: string

@@ -32,4 +32,14 @@ export class TypeOrmSeasonRepository extends SeasonRepository {
     const entity = this.repo.create(data as Partial<SeasonEntity>)
     return this.repo.save(entity)
   }
+
+  async update(id: string, data: Partial<ISeason>): Promise<ISeason> {
+    await this.repo.update(id, data)
+    const updated = await this.repo.findOne({ where: { id } })
+    return updated!
+  }
+
+  async deactivateAll(): Promise<void> {
+    await this.repo.update({ is_active: true }, { is_active: false })
+  }
 }

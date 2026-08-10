@@ -95,4 +95,13 @@ export class TypeOrmActivityRepository extends ActivityRepository {
       total_xp: parseInt(r.total_xp, 10),
     }))
   }
+
+  async update(id: string, data: Partial<IActivityLog>): Promise<IActivityLog> {
+    await this.repo.update(id, data as Partial<ActivityLogEntity>)
+    return this.repo.findOneOrFail({ where: { id } })
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id)
+  }
 }

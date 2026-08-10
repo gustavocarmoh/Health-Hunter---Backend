@@ -105,8 +105,9 @@ Multiplicadores de XP: E=1.0x, D=1.5x, C=2.0x, B=2.5x, A=3.5x, S=5.0x.
 
   // ── Start ────────────────────────────────────────────────────────────────
   const port = process.env.PORT ?? 3000
-  await app.listen(port)
-  bootstrapLogger.log(`Health Hunter BFF running on port ${port}`)
+  const host = process.env.HOST ?? '0.0.0.0'
+  await app.listen(port, host)
+  bootstrapLogger.log(`Health Hunter BFF running on ${host}:${port}`)
   bootstrapLogger.log(`Swagger UI: http://localhost:${port}/api/docs`)
 }
 

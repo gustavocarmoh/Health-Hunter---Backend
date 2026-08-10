@@ -62,4 +62,10 @@ export abstract class ActivityRepository {
     endsAt: Date,
     limit: number,
   ): Promise<{ user_id: string; total_xp: number }[]>
+
+  /** Atualiza uma atividade pelo UUID. */
+  abstract update(id: string, data: Partial<IActivityLog>): Promise<IActivityLog>
+
+  /** Deleta uma atividade pelo UUID. */
+  abstract delete(id: string): Promise<void>
 }

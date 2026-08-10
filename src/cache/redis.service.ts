@@ -8,12 +8,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: Redis
 
   constructor(private readonly configService: ConfigService) {
+    const maxRetries = this.configService.get<number>('REDIS_RETRY_ATTEMPTS', 10)
+
     this.client = new Redis({
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
       password: this.configService.get<string>('REDIS_PASSWORD') || undefined,
       lazyConnect: true,
-      retryStrategy: (times) => Math.min(times * 100, 3000),
+      // Desiste após maxRetries tentativas para não travar o bootstrap indefinidamente
+      // quando o Redis está inacessível.
+      retryStrategy: (times) => (times > maxRetries ? null : Math.min(times * 100, 3000)),
     })
 
     this.client.on('error', (err: Error) => {
@@ -25,8 +29,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
    * Conecta ao Redis quando o módulo NestJS é inicializado.
    */
   async onModuleInit(): Promise<void> {
-    await this.client.connect()
-    this.logger.log('Redis connected.')
+    const host = this.configService.get<string>('REDIS_HOST', 'localhost')
+    const port = this.configService.get<number>('REDIS_PORT', 6379)
+    this.logger.log(`Conectando ao Redis em ${host}:${port}...`)
+    try {
+      await this.client.connect()
+      this.logger.log('Redis connected.')
+    } catch (err) {
+      this.logger.error(
+        `Não foi possível conectar ao Redis em ${host}:${port}: ${(err as Error).message}`,
+      )
+      throw err
+    }
   }
 
   /**

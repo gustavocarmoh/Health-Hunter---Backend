@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, Logger } from '@nestjs/common'
 import { SeasonRepository } from '../../repositories/abstract/season.repository'
 import { ActivityRepository } from '../../repositories/abstract/activity.repository'
 import { UserRepository } from '../../repositories/abstract/user.repository'
+import { ISeason } from '../../common/interfaces/season.interface'
 
 @Injectable()
 export class SeasonsService {
+  private readonly logger = new Logger(SeasonsService.name)
+
   constructor(
     private readonly seasonRepository: SeasonRepository,
     private readonly activityRepository: ActivityRepository,
@@ -55,5 +58,50 @@ export class SeasonsService {
         }
       }),
     }
+  }
+
+  async createSeason(data: Omit<ISeason, 'id' | 'created_at'>) {
+    // Desativar season atual se houver
+    await this.seasonRepository.deactivateAll()
+
+    // Criar nova season
+    const season = await this.seasonRepository.create({
+      ...data,
+      is_active: true,
+    })
+
+    this.logger.log(`Season criada: ${season.title} (${season.id})`)
+    return season
+  }
+
+  async endSeason(seasonId: string) {
+    const season = await this.seasonRepository.findById(seasonId)
+    if (!season) throw new NotFoundException('Season not found.')
+
+    // Obter top 3 do leaderboard da season
+    const topXp = await this.activityRepository.getTopByXpInPeriod(
+      season.starts_at,
+      season.ends_at,
+      3,
+    )
+
+    this.logger.log(`Encerrando season ${season.title}. Top 3: ${topXp.length} hunters`)
+
+    // Creditar rewards aos top 3 (ex: 1º = 1000 coins, 2º = 500, 3º = 250)
+    const rewards = [1000, 500, 250]
+    for (let i = 0; i < topXp.length && i < rewards.length; i++) {
+      const hunter = await this.userRepository.findById(topXp[i].user_id)
+      if (hunter) {
+        const newCoins = (hunter.coins || 0) + rewards[i]
+        await this.userRepository.update(topXp[i].user_id, { coins: newCoins })
+        this.logger.log(`Reward: ${hunter.name} recebeu ${rewards[i]} coins (position: ${i + 1})`)
+      }
+    }
+
+    // Desativar season
+    await this.seasonRepository.update(seasonId, { is_active: false })
+
+    this.logger.log(`Season ${season.title} encerrada com sucesso`)
+    return { message: `Season ${season.title} encerrada`, rewards_distributed: topXp.length }
   }
 }

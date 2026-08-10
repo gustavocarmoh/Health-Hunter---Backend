@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common'
 import { UserRepository } from '../../repositories/abstract/user.repository'
 import { ActivityRepository } from '../../repositories/abstract/activity.repository'
 import { FollowRepository } from '../../repositories/abstract/follow.repository'
@@ -323,5 +323,102 @@ export class HuntersService {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
     return this.bodyMeasurementRepository.findByUserId(userId, page, limit)
+  }
+
+  async getFriends(userId: string, page: number, limit: number) {
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    const followingIds = await this.followRepository.findFollowingIds(userId)
+    if (followingIds.length === 0) {
+      return {
+        total: 0,
+        page,
+        limit,
+        friends: [],
+      }
+    }
+
+    const friends = await this.userRepository.findByIds(followingIds)
+    return {
+      total: friends.length,
+      page,
+      limit,
+      friends: friends.map((u) => ({
+        id: u.id,
+        name: u.name,
+        rank: u.rank_level,
+        xp: u.xp,
+      })),
+    }
+  }
+
+  async searchHunters(userId: string, query: string, limit: number) {
+    if (!query || query.trim().length < 2) {
+      throw new BadRequestException('Search query must be at least 2 characters.')
+    }
+
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    // Search by name (case-insensitive, partial match)
+    const searchResults = await this.userRepository.findByNameContains(
+      query.trim(),
+      Math.min(limit, 50),
+    )
+
+    // Get current user's following IDs for UI indication
+    const followingIds = await this.followRepository.findFollowingIds(userId)
+    const followingSet = new Set(followingIds)
+
+    return {
+      query,
+      total: searchResults.length,
+      results: searchResults
+        .filter((u) => u.id !== userId) // Exclude self
+        .map((u) => ({
+          id: u.id,
+          name: u.name,
+          rank: u.rank_level,
+          xp: u.xp,
+          is_following: followingSet.has(u.id),
+        })),
+    }
+  }
+
+  async allocateStat(userId: string, attribute: string) {
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    if (user.stat_points_available <= 0) {
+      throw new ConflictException('You have no stat points available to distribute.')
+    }
+
+    const validAttributes = ['strength', 'intel', 'vitality', 'sense', 'agility']
+    if (!validAttributes.includes(attribute)) {
+      throw new BadRequestException(
+        `Invalid attribute. Must be one of: ${validAttributes.join(', ')}`
+      )
+    }
+
+    const update: Record<string, any> = {
+      stat_points_available: user.stat_points_available - 1,
+      [attribute]: (user[attribute as keyof IUser] as number) + 1,
+    }
+
+    const updated = await this.userRepository.update(userId, update as Partial<IUser>)
+    await this.redisService.del(`hunter:profile:${userId}`)
+
+    return {
+      message: `${attribute.charAt(0).toUpperCase() + attribute.slice(1)} increased by 1.`,
+      stats: {
+        strength: updated?.strength || 0,
+        intel: updated?.intel || 0,
+        vitality: updated?.vitality || 0,
+        sense: updated?.sense || 0,
+        agility: updated?.agility || 0,
+        stat_points_available: updated?.stat_points_available || 0,
+      },
+    }
   }
 }

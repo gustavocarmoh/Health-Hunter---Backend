@@ -1,0 +1,166 @@
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
+import { UserRepository } from '../../repositories/abstract/user.repository'
+import { DailyMissionRepository } from '../../repositories/abstract/daily-mission.repository'
+import { DailyMission } from '../../database/entities/daily-mission.entity'
+
+export interface Mission {
+  id: string
+  name: string
+  category: string
+  difficulty: string
+  xp: number
+  icon: string
+  done: boolean
+  daily: boolean
+}
+
+export const DAILY_MISSION_TEMPLATES = [
+  {
+    name: 'Corrida Matinal',
+    category: 'RUNNING',
+    difficulty: 'NORMAL',
+    xp: 150,
+    icon: '🏃',
+  },
+  {
+    name: 'Treino Pesado',
+    category: 'WORKOUT',
+    difficulty: 'HARD',
+    xp: 250,
+    icon: '💪',
+  },
+  {
+    name: 'Meditação Diária',
+    category: 'MEDITATION',
+    difficulty: 'EASY',
+    xp: 100,
+    icon: '🧘',
+  },
+  {
+    name: 'Hidratação 2L',
+    category: 'HYDRATION',
+    difficulty: 'EASY',
+    xp: 50,
+    icon: '💧',
+  },
+  {
+    name: 'Caminhada Noturna',
+    category: 'WALKING',
+    difficulty: 'NORMAL',
+    xp: 120,
+    icon: '🚶',
+  },
+  {
+    name: 'Alongamento',
+    category: 'STRETCHING',
+    difficulty: 'EASY',
+    xp: 75,
+    icon: '🤸',
+  },
+  {
+    name: 'Ioga Relaxante',
+    category: 'YOGA',
+    difficulty: 'NORMAL',
+    xp: 130,
+    icon: '🧘‍♀️',
+  },
+  {
+    name: 'Treino HIIT',
+    category: 'HIIT',
+    difficulty: 'VERY_HARD',
+    xp: 300,
+    icon: '⚡',
+  },
+]
+
+@Injectable()
+export class MissionsService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly dailyMissionRepository: DailyMissionRepository,
+  ) {}
+
+  async generateDaily(userId: string): Promise<Mission[]> {
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    // Check if missions were already generated today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const existingMissions = await this.dailyMissionRepository.findByUserIdAndDate(userId, today)
+
+    if (existingMissions.length > 0) {
+      throw new ConflictException(
+        'Você já gerou suas missões diárias hoje. Volte amanhã para gerar novas missões.'
+      )
+    }
+
+    // Shuffle array and take 3-5 random missions
+    const count = Math.floor(Math.random() * 3) + 3 // 3-5
+    const shuffled = DAILY_MISSION_TEMPLATES.sort(() => Math.random() - 0.5)
+    const selected = shuffled.slice(0, count)
+
+    // Persist missions to database
+    const createdMissions = await Promise.all(
+      selected.map((m) =>
+        this.dailyMissionRepository.create({
+          user_id: userId,
+          name: m.name,
+          category: m.category,
+          difficulty: m.difficulty,
+          xp: m.xp,
+          icon: m.icon,
+          done: false,
+          daily: true,
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // expires in 24 hours
+        })
+      )
+    )
+
+    return createdMissions.map((m) => ({
+      id: m.id,
+      name: m.name,
+      category: m.category,
+      difficulty: m.difficulty,
+      xp: m.xp,
+      icon: m.icon,
+      done: m.done,
+      daily: m.daily,
+    }))
+  }
+
+  async createIndividual(userId: string, data: {
+    name: string
+    category: string
+    difficulty: string
+    xp: number
+    icon?: string
+  }): Promise<Mission> {
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    const created = await this.dailyMissionRepository.create({
+      user_id: userId,
+      name: data.name,
+      category: data.category,
+      difficulty: data.difficulty,
+      xp: data.xp,
+      icon: data.icon || '📋',
+      done: false,
+      daily: false,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // expires in 30 days
+    })
+
+    return {
+      id: created.id,
+      name: created.name,
+      category: created.category,
+      difficulty: created.difficulty,
+      xp: created.xp,
+      icon: created.icon,
+      done: created.done,
+      daily: created.daily,
+    }
+  }
+
+}

@@ -110,7 +110,18 @@ export class GuildsService {
    * @returns Objeto paginado com guildas e total
    */
   async listGuilds(page: number, limit: number, search?: string) {
-    return this.guildRepository.findAll(page, limit, search)
+    const { guilds, total } = await this.guildRepository.findAll(page, limit, search)
+
+    return {
+      guilds: guilds.map((g) => ({
+        id: g.id,
+        name: g.name,
+        tag: g.tag,
+        level: 1, // Guild level (static for now)
+        memberCount: 0, // TODO: Count guild members from database
+      })),
+      total,
+    }
   }
 
   /**
@@ -162,6 +173,23 @@ export class GuildsService {
     if (!guild) return { guild: null, membership: null }
 
     return { guild, membership }
+  }
+
+  async getMyGuildMembers(userId: string) {
+    const membership = await this.memberRepository.findByUserId(userId)
+    if (!membership) return []
+
+    const members = await this.memberRepository.findByGuildId(membership.guild_id)
+    const userIds = members.map((m) => m.user_id)
+    const users = await this.userRepository.findByIds(userIds)
+    const userMap = new Map(users.map((u) => [u.id, u]))
+
+    return members.map((m) => ({
+      user_id: m.user_id,
+      name: userMap.get(m.user_id)?.name || 'Unknown',
+      role: m.role,
+      xp: m.contribution_xp || 0,
+    }))
   }
 
   /**
@@ -322,6 +350,33 @@ export class GuildsService {
     })
 
     return { message: `Bem-vindo à guilda ${guild.name}!`, membership: member }
+  }
+
+  /**
+   * Entra em uma guilda pública diretamente (sem convite).
+   * O hunter não pode estar em outra guilda já.
+   */
+  async joinGuild(guildId: string, userId: string) {
+    const guild = await this.guildRepository.findById(guildId)
+    if (!guild) throw new NotFoundException('Guilda não encontrada.')
+    if (!guild.is_public) throw new BadRequestException('Esta guilda é privada.')
+
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    const existing = await this.memberRepository.findByUserId(userId)
+    if (existing) throw new ConflictException('Você já pertence a uma guilda.')
+
+    await this.memberRepository.addMember({
+      guild_id: guildId,
+      user_id: userId,
+      role: GuildMemberRole.MEMBER,
+    })
+
+    await this.redisService.del(`guild:${guildId}`)
+    await this.redisService.del(`hunter:guild:${userId}`)
+
+    return { message: 'Entrou na guilda com sucesso.', guild_id: guildId }
   }
 
   /**
