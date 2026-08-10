@@ -11,17 +11,18 @@ Backend for Frontend (BFF) para o **Health Hunter** — aplicativo de fitness ga
 | Node.js | 25.x | Runtime |
 | NestJS | 10.x | Framework principal |
 | TypeScript | 5.x | Linguagem (`strict: true`) |
-| TypeORM | 0.3.20 | ORM |
+| TypeORM | 0.3.20 | ORM com migrations automáticas |
 | PostgreSQL | 16 | Banco de dados principal |
 | Redis | 7 | Cache e rate limiting |
 | ioredis | 5.3.2 | Cliente Redis |
-| @nestjs/swagger | 7.3.1 | Documentação OpenAPI |
+| @nestjs/swagger | 7.3.1 | Documentação OpenAPI em `/api/docs` |
 | AJV | 8.x | Validação de schema (middleware Express) |
 | class-validator | — | Validação de DTO (NestJS pipe) |
 | Passport JWT | — | Autenticação (access 15 min / refresh 7 dias) |
-| @nestjs/throttler | — | Rate limiting global |
-| Husky | 9.x | Git hooks |
-| commitlint | 19.x | Conventional Commits |
+| @nestjs/throttler | — | Rate limiting global (100 req/min) |
+| @google/generative-ai | — | IA Mentor com streaming SSE (Gemini) |
+| Husky | 9.x | Git hooks (pre-commit + commit-msg) |
+| commitlint | 19.x | Conventional Commits (obrigatório) |
 
 ---
 
@@ -64,6 +65,22 @@ docker-compose up -d
 # 4. Iniciar em modo desenvolvimento
 npm run start:dev
 ```
+
+### Opção C — Tudo em Docker (app + PostgreSQL + Redis)
+
+Sobe o backend já containerizado, junto com o banco e o cache, tudo na mesma rede Docker:
+
+```bash
+cp .env.example .env
+# Editar .env com suas configurações
+
+docker-compose up -d --build
+```
+
+O serviço `backend` publica a porta `3000` em `0.0.0.0` (todas as interfaces de rede do host),
+então além de `http://localhost:3000` ele fica acessível pelo IP local da máquina
+(ex: `http://192.168.0.10:3000`) — necessário para testar a partir de um app mobile
+no mesmo Wi-Fi/rede. Veja [Acesso via rede local](#acesso-via-rede-local-app-mobile).
 
 ---
 
@@ -116,6 +133,29 @@ http://localhost:3000/api/docs
 ```
 
 Swagger UI com autenticação Bearer integrada (`persistAuthorization: true`).
+
+---
+
+## Acesso via rede local (app mobile)
+
+Para testar o app (Expo/React Native, etc.) em um dispositivo físico ou emulador na mesma rede,
+o backend precisa estar acessível pelo IP local da máquina, não só por `localhost`:
+
+1. Suba o backend em container (`docker-compose up -d --build`) — a porta `3000` já é publicada
+   em `0.0.0.0`, ou rode `npm run start:dev` (o `main.ts` já faz `listen` em `HOST=0.0.0.0` por padrão).
+2. Descubra o IP local da máquina na rede:
+   ```bash
+   # Linux/macOS
+   hostname -I | awk '{print $1}'   # ou: ip addr show | grep "inet "
+   # Windows (PowerShell)
+   ipconfig
+   ```
+3. No app, aponte a `baseURL` da API para `http://<SEU_IP_LOCAL>:3000` (ex: `http://192.168.0.10:3000`).
+4. Garanta que o firewall do SO libera conexões de entrada na porta `3000` e que o
+   dispositivo/emulador está na **mesma rede Wi-Fi/LAN** que a máquina host.
+5. Se o app for aberto no navegador (Expo Web), inclua a origem correspondente em
+   `ALLOWED_ORIGINS` no `.env` (apps nativos não enviam header `Origin`, então CORS não afeta
+   requisições vindas de iOS/Android nativos).
 
 ---
 

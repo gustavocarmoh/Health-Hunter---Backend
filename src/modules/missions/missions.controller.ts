@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Logger, Get, Body, Param } from '@nestjs/common'
+import { Controller, Post, UseGuards, Logger, Get, Body, Param, Patch } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { MissionsService } from './missions.service'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
@@ -19,9 +19,22 @@ export class MissionsController {
     logger.log('✓ MissionsController initialized')
   }
 
+  @ApiOperation({
+    summary: 'Listar missões do usuário',
+    description: 'Retorna todas as missões do usuário autenticado, incluindo diárias e individuais.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de missões do usuário.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autenticado.',
+  })
   @Get()
-  async listMissions() {
-    return { message: 'Missions endpoint is accessible', version: '1.0.0' }
+  @UseGuards(JwtAuthGuard)
+  async listMissions(@CurrentUser() user: IUser) {
+    return this.missionsService.getMissionsForUser(user.id)
   }
 
   @ApiOperation({
@@ -70,5 +83,20 @@ export class MissionsController {
     @Body() body: { name: string; category: string; difficulty: string; xp: number; icon?: string },
   ) {
     return this.missionsService.createIndividual(userId, body)
+  }
+
+  @ApiOperation({
+    summary: 'Marcar missão como concluída/não concluída',
+    description: 'Atualiza o status de conclusão de uma missão do usuário.',
+  })
+  @ApiResponse({ status: 200, description: 'Missão atualizada.' })
+  @ApiResponse({ status: 404, description: 'Missão não encontrada.' })
+  @Patch(':id/done')
+  async updateMissionDone(
+    @Param('id') id: string,
+    @CurrentUser() user: IUser,
+    @Body() body: { done: boolean },
+  ) {
+    return this.missionsService.updateMissionDone(user.id, id, body.done)
   }
 }

@@ -17,6 +17,24 @@ export class TypeOrmDailyMissionRepository extends DailyMissionRepository {
     return this.repo.save(mission)
   }
 
+  async findById(id: string): Promise<DailyMission | null> {
+    return this.repo.findOne({
+      where: { id },
+    })
+  }
+
+  async findByUserId(userId: string): Promise<DailyMission[]> {
+    return this.repo.find({
+      where: {
+        user_id: userId,
+        daily: true,
+      },
+      order: {
+        created_at: 'DESC',
+      },
+    })
+  }
+
   async findByUserIdAndDate(userId: string, date: Date): Promise<DailyMission[]> {
     const startOfDay = new Date(date)
     startOfDay.setHours(0, 0, 0, 0)
@@ -38,6 +56,10 @@ export class TypeOrmDailyMissionRepository extends DailyMissionRepository {
         expires_at: LessThan(new Date()),
       },
     })
+  }
+
+  async save(mission: DailyMission): Promise<DailyMission> {
+    return this.repo.save(mission)
   }
 
   async delete(id: string): Promise<void> {

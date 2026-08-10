@@ -80,6 +80,13 @@ export class MissionsService {
     private readonly dailyMissionRepository: DailyMissionRepository,
   ) {}
 
+  async getMissionsForUser(userId: string): Promise<Mission[]> {
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    return this.dailyMissionRepository.findByUserId(userId)
+  }
+
   async generateDaily(userId: string): Promise<Mission[]> {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
@@ -160,6 +167,42 @@ export class MissionsService {
       icon: created.icon,
       done: created.done,
       daily: created.daily,
+    }
+  }
+
+  async updateMissionDone(userId: string, missionId: string, done: boolean): Promise<Mission> {
+    const user = await this.userRepository.findById(userId)
+    if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
+
+    // Find mission by id and ensure it belongs to user
+    const mission = await this.dailyMissionRepository.findById(missionId)
+    if (!mission || mission.user_id !== userId) {
+      throw new NotFoundException('Missão não encontrada ou acesso negado.')
+    }
+
+    // Calculate XP delta based on status change
+    const wasDone = mission.done
+    const xpDelta = done && !wasDone ? mission.xp : (!done && wasDone ? -mission.xp : 0)
+
+    // Update mission in database
+    mission.done = done
+    const updated = await this.dailyMissionRepository.save(mission)
+
+    // Update user XP if there's a change
+    if (xpDelta !== 0) {
+      const newXp = Math.max(0, user.xp + xpDelta)
+      await this.userRepository.update(userId, { xp: newXp })
+    }
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      category: updated.category,
+      difficulty: updated.difficulty,
+      xp: updated.xp,
+      icon: updated.icon,
+      done: updated.done,
+      daily: updated.daily,
     }
   }
 
