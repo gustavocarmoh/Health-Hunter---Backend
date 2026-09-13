@@ -2,14 +2,14 @@ import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/c
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { ConfigModule } from '@nestjs/config'
-import { AuthService } from './auth.service'
-import { AuthController } from './auth.controller'
-import { JwtStrategy } from './strategies/jwt.strategy'
-import { RepositoriesModule } from '../../repositories/repositories.module'
-import { createAjvMiddleware } from '../../common/middleware/ajv-body.middleware'
-import { registerSchema } from './dto/register.schema'
-import { loginSchema } from './dto/login.schema'
-import { refreshTokenSchema } from './dto/refresh-token.schema'
+import { AuthService } from './auth.service.js'
+import { AuthController } from './auth.controller.js'
+import { JwtStrategy } from './strategies/jwt.strategy.js'
+import { RepositoriesModule } from '../../repositories/repositories.module.js'
+import { createAjvMiddleware } from '../../common/middleware/ajv-body.middleware.js'
+import { registerSchema } from './dto/register.schema.js'
+import { loginSchema } from './dto/login.schema.js'
+import { refreshTokenSchema } from './dto/refresh-token.schema.js'
 
 @Module({
   imports: [ConfigModule, PassportModule, JwtModule.register({}), RepositoriesModule],

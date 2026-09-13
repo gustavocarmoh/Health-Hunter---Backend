@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
-import { StoreController } from './store.controller'
-import { StoreService } from './store.service'
-import { RepositoriesModule } from '../../repositories/repositories.module'
+import { StoreController } from './store.controller.js'
+import { StoreService } from './store.service.js'
+import { RepositoriesModule } from '../../repositories/repositories.module.js'
 
 @Module({
   imports: [RepositoriesModule],

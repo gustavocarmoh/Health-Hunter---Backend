@@ -1,11 +1,11 @@
 import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios from 'axios'
-import { AiConversationRepository } from '../../repositories/abstract/ai-conversation.repository'
-import { AiMessageRepository } from '../../repositories/abstract/ai-message.repository'
-import { AiConversationEntity } from '../../database/entities/ai-conversation.entity'
-import { AiMessageEntity, MessageRole } from '../../database/entities/ai-message.entity'
-import { ChatMessageDto } from './dto/chat-message.dto'
+import { AiConversationRepository } from '../../repositories/abstract/ai-conversation.repository.js'
+import { AiMessageRepository } from '../../repositories/abstract/ai-message.repository.js'
+import { AiConversationEntity } from '../../database/entities/ai-conversation.entity.js'
+import { AiMessageEntity, MessageRole } from '../../database/entities/ai-message.entity.js'
+import { ChatMessageDto } from './dto/chat-message.dto.js'
 
 @Injectable()
 export class AiService {
@@ -121,7 +121,7 @@ Mentor:`
             // Se done === true, stream terminou
             if (parsed.done) break
           }
-        } catch (e) {
+        } catch {
           // Ignorar erros de parsing, continuar
         }
       }

@@ -10,7 +10,7 @@ import {
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { GpsCoordinatesDto } from './log-activity.dto'
+import { GpsCoordinatesDto } from './log-activity.dto.js'
 
 export class UpdateActivityDto {
   @ApiPropertyOptional({

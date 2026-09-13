@@ -1,4 +1,4 @@
-import { INotification } from '../../common/interfaces/notification.interface'
+import { INotification } from '../../common/interfaces/notification.interface.js'
 
 export abstract class NotificationRepository {
   abstract create(data: Omit<INotification, 'id' | 'created_at'>): Promise<INotification>

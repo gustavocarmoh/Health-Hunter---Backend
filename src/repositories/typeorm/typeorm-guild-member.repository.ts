@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { GuildMemberEntity } from '../../database/entities/guild-member.entity'
-import { GuildMemberRepository } from '../abstract/guild-member.repository'
-import { IGuildMember } from '../../common/interfaces/guild-member.interface'
-import { GuildMemberRole } from '../../common/enums/guild.enum'
+import { GuildMemberEntity } from '../../database/entities/guild-member.entity.js'
+import { GuildMemberRepository } from '../abstract/guild-member.repository.js'
+import { IGuildMember } from '../../common/interfaces/guild-member.interface.js'
+import { GuildMemberRole } from '../../common/enums/guild.enum.js'
 
 /**
  * Implementação TypeORM do GuildMemberRepository.

@@ -1,4 +1,4 @@
-import { IActivityLog } from '../../common/interfaces/activity.interface'
+import { IActivityLog } from '../../common/interfaces/activity.interface.js'
 
 /**
  * Contrato abstrato do repositório de logs de atividades.

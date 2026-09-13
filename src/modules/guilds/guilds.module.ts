@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
-import { GuildsController } from './guilds.controller'
-import { GuildsService } from './guilds.service'
-import { RepositoriesModule } from '../../repositories/repositories.module'
+import { GuildsController } from './guilds.controller.js'
+import { GuildsService } from './guilds.service.js'
+import { RepositoriesModule } from '../../repositories/repositories.module.js'
 
 @Module({
   imports: [RepositoriesModule],

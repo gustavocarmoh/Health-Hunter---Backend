@@ -1,32 +1,32 @@
-import { AppDataSource } from './data-source';
-import { UserEntity } from './entities/user.entity';
-import { ChallengeEntity } from './entities/challenge.entity';
-import { EventEntity } from './entities/event.entity';
-import { StoreItemEntity } from './entities/store-item.entity';
-import { GuildEntity } from './entities/guild.entity';
-import { GuildMemberEntity } from './entities/guild-member.entity';
-import { Role } from '../common/enums/role.enum';
-import { HunterRank } from '../common/enums/rank.enum';
-import { GuildMemberRole } from '../common/enums/guild.enum';
-import * as bcrypt from 'bcrypt';
+import { AppDataSource } from './data-source.js'
+import { UserEntity } from './entities/user.entity.js'
+import { ChallengeEntity } from './entities/challenge.entity.js'
+import { EventEntity } from './entities/event.entity.js'
+import { StoreItemEntity } from './entities/store-item.entity.js'
+import { GuildEntity } from './entities/guild.entity.js'
+import { GuildMemberEntity } from './entities/guild-member.entity.js'
+import { Role } from '../common/enums/role.enum.js'
+import { HunterRank } from '../common/enums/rank.enum.js'
+import { GuildMemberRole } from '../common/enums/guild.enum.js'
+import * as bcrypt from 'bcrypt'
 
 async function seed() {
   try {
-    await AppDataSource.initialize();
-    console.log('✅ Database connection established');
+    await AppDataSource.initialize()
+    console.log('✅ Database connection established')
 
-    const userRepo = AppDataSource.getRepository(UserEntity);
-    const challengeRepo = AppDataSource.getRepository(ChallengeEntity);
-    const eventRepo = AppDataSource.getRepository(EventEntity);
-    const storeRepo = AppDataSource.getRepository(StoreItemEntity);
-    const guildRepo = AppDataSource.getRepository(GuildEntity);
-    const guildMemberRepo = AppDataSource.getRepository(GuildMemberEntity);
+    const userRepo = AppDataSource.getRepository(UserEntity)
+    const challengeRepo = AppDataSource.getRepository(ChallengeEntity)
+    const eventRepo = AppDataSource.getRepository(EventEntity)
+    const storeRepo = AppDataSource.getRepository(StoreItemEntity)
+    const guildRepo = AppDataSource.getRepository(GuildEntity)
+    const guildMemberRepo = AppDataSource.getRepository(GuildMemberEntity)
 
     // 1. Create test users for login testing
-    console.log('🌱 Seeding users...');
-    const users = [];
+    console.log('🌱 Seeding users...')
+    const users = []
     for (let i = 1; i <= 5; i++) {
-      const passwordHash = await bcrypt.hash('password123', 10);
+      const passwordHash = await bcrypt.hash('password123', 10)
       const user = userRepo.create({
         email: `hunter${i}@example.com`,
         name: `Test Hunter ${i}`,
@@ -35,20 +35,20 @@ async function seed() {
         rank_level: [HunterRank.E, HunterRank.D, HunterRank.C, HunterRank.B, HunterRank.A][i % 5],
         xp: 5000 * i,
         coins: 1000 * i,
-      });
-      await userRepo.save(user);
-      users.push(user);
-      console.log(`  ✅ Created user: hunter${i}@example.com (password: password123)`);
+      })
+      await userRepo.save(user)
+      users.push(user)
+      console.log(`  ✅ Created user: hunter${i}@example.com (password: password123)`)
     }
 
     // 1.5 Create guilds
-    console.log('🌱 Seeding guilds...');
-    const guilds = [];
+    console.log('🌱 Seeding guilds...')
+    const guilds = []
     const guildData = [
       { name: 'Thunder Hunters', tag: 'THR', description: 'Elite fitness warriors', emblem: '⚡' },
       { name: 'Phoenix Squad', tag: 'PHX', description: 'Rising from the ashes', emblem: '🔥' },
       { name: 'Blade Masters', tag: 'BLD', description: 'Sharp and deadly training', emblem: '⚔️' },
-    ];
+    ]
 
     for (let i = 0; i < guildData.length; i++) {
       const guild = guildRepo.create({
@@ -57,23 +57,23 @@ async function seed() {
         rank: HunterRank.B,
         xp: 5000 + i * 1000,
         is_public: true,
-      });
-      await guildRepo.save(guild);
-      guilds.push(guild);
+      })
+      await guildRepo.save(guild)
+      guilds.push(guild)
 
       // Add master as member
       const member = guildMemberRepo.create({
         guild_id: guild.id,
         user_id: users[i].id,
         role: GuildMemberRole.MASTER,
-      });
-      await guildMemberRepo.save(member);
+      })
+      await guildMemberRepo.save(member)
 
-      console.log(`  ✅ Created guild: ${guild.name} (Master: ${users[i].name})`);
+      console.log(`  ✅ Created guild: ${guild.name} (Master: ${users[i].name})`)
     }
 
     // 2. Create challenges
-    console.log('🌱 Seeding challenges...');
+    console.log('🌱 Seeding challenges...')
     const challenges = [
       {
         title: 'Run 5km Daily',
@@ -107,17 +107,17 @@ async function seed() {
         coins_base: 200,
         min_rank_required: 'E',
       },
-    ];
+    ]
 
     for (const c of challenges) {
-      const challenge = challengeRepo.create(c);
-      await challengeRepo.save(challenge);
+      const challenge = challengeRepo.create(c)
+      await challengeRepo.save(challenge)
     }
-    console.log(`  ✅ Created ${challenges.length} challenges`);
+    console.log(`  ✅ Created ${challenges.length} challenges`)
 
     // 3. Create events
-    console.log('🌱 Seeding events...');
-    const now = new Date();
+    console.log('🌱 Seeding events...')
+    const now = new Date()
     const events = [
       {
         title: 'Weekly Group Run',
@@ -146,16 +146,16 @@ async function seed() {
         region_filter: null,
         xp_cap_per_hunter: 800,
       },
-    ];
+    ]
 
     for (const e of events) {
-      const event = eventRepo.create(e);
-      await eventRepo.save(event);
+      const event = eventRepo.create(e)
+      await eventRepo.save(event)
     }
-    console.log(`  ✅ Created ${events.length} events`);
+    console.log(`  ✅ Created ${events.length} events`)
 
     // 4. Create store items
-    console.log('🌱 Seeding store items...');
+    console.log('🌱 Seeding store items...')
     const items = [
       {
         name: 'Premium Badge',
@@ -185,27 +185,27 @@ async function seed() {
         price_coins: 150,
         icon: '🚀',
       },
-    ];
+    ]
 
     for (const item of items) {
-      const storeItem = storeRepo.create(item);
-      await storeRepo.save(storeItem);
+      const storeItem = storeRepo.create(item)
+      await storeRepo.save(storeItem)
     }
-    console.log(`  ✅ Created ${items.length} store items`);
+    console.log(`  ✅ Created ${items.length} store items`)
 
-    console.log('\n✅ Seeding completed successfully!\n');
-    console.log('📝 Test Credentials for Mobile Login:');
-    console.log('  Email: hunter1@example.com');
-    console.log('  Password: password123\n');
-    console.log('  Email: hunter2@example.com');
-    console.log('  Password: password123\n');
-    console.log('🎯 Ready to test registration and login flows!\n');
+    console.log('\n✅ Seeding completed successfully!\n')
+    console.log('📝 Test Credentials for Mobile Login:')
+    console.log('  Email: hunter1@example.com')
+    console.log('  Password: password123\n')
+    console.log('  Email: hunter2@example.com')
+    console.log('  Password: password123\n')
+    console.log('🎯 Ready to test registration and login flows!\n')
 
-    await AppDataSource.destroy();
+    await AppDataSource.destroy()
   } catch (error) {
-    console.error('❌ Seeding failed:', error);
-    process.exit(1);
+    console.error('❌ Seeding failed:', error)
+    process.exit(1)
   }
 }
 
-seed();
+seed()

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
-import { EventRepository } from '../../repositories/abstract/event.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { RedisService } from '../../cache/redis.service'
+import { EventRepository } from '../../repositories/abstract/event.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
 
 const EVENTS_TTL = 60 // 1 minute
 

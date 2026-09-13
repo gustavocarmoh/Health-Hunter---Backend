@@ -1,4 +1,4 @@
-import { IHunterItem } from '../../common/interfaces/hunter-item.interface'
+import { IHunterItem } from '../../common/interfaces/hunter-item.interface.js'
 
 export abstract class HunterItemRepository {
   abstract findByUserId(userId: string): Promise<IHunterItem[]>

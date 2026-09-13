@@ -1,4 +1,4 @@
-import { GuildMemberRole } from '../enums/guild.enum'
+import { GuildMemberRole } from '../enums/guild.enum.js'
 
 /**
  * Vínculo entre um hunter e uma guilda.

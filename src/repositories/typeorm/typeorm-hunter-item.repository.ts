@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { HunterItemEntity } from '../../database/entities/hunter-item.entity'
-import { HunterItemRepository } from '../abstract/hunter-item.repository'
-import { IHunterItem } from '../../common/interfaces/hunter-item.interface'
+import { HunterItemEntity } from '../../database/entities/hunter-item.entity.js'
+import { HunterItemRepository } from '../abstract/hunter-item.repository.js'
+import { IHunterItem } from '../../common/interfaces/hunter-item.interface.js'
 
 @Injectable()
 export class TypeOrmHunterItemRepository extends HunterItemRepository {

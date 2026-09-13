@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm'
-import { IAuditLog } from '../../common/interfaces/audit-log.interface'
+import { IAuditLog } from '../../common/interfaces/audit-log.interface.js'
 
 @Entity('audit_logs')
 @Index(['target_user_id'])

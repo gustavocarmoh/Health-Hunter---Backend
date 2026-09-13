@@ -1,4 +1,4 @@
-import { AiConversationEntity } from '../../database/entities/ai-conversation.entity'
+import { AiConversationEntity } from '../../database/entities/ai-conversation.entity.js'
 
 export abstract class AiConversationRepository {
   abstract create(data: { user_id: string; title?: string }): Promise<AiConversationEntity>

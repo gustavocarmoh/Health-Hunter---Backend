@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
-import { StoreService } from './store.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
+import { StoreService } from './store.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @ApiTags('store')
 @ApiBearerAuth('access-token')

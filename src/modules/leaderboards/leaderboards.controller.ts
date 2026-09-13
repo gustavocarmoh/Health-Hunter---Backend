@@ -1,9 +1,9 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
-import { LeaderboardsService } from './leaderboards.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
+import { LeaderboardsService } from './leaderboards.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @ApiTags('leaderboards')
 @ApiBearerAuth('access-token')

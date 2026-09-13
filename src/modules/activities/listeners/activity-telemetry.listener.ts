@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { ActivityCompletedPayload } from '../events/activity-completed.event'
+import { ActivityCompletedPayload } from '../events/activity-completed.event.js'
 
 interface NormalizedActivityPayload {
   activity_id: string

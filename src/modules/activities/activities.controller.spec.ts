@@ -1,14 +1,15 @@
+import { jest } from '@jest/globals'
 import { Test, TestingModule } from '@nestjs/testing'
 import { ExecutionContext, UnauthorizedException, BadRequestException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { ActivitiesController } from './activities.controller'
-import { ActivitiesService } from './activities.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { LogActivityDto } from './dto/log-activity.dto'
-import { Role } from '../../common/enums/role.enum'
-import { HunterRank } from '../../common/enums/rank.enum'
-import { LifestyleType } from '../../common/enums/lifestyle.enum'
-import { IUser } from '../../common/interfaces/user.interface'
+import { ActivitiesController } from './activities.controller.js'
+import { ActivitiesService } from './activities.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { LogActivityDto } from './dto/log-activity.dto.js'
+import { Role } from '../../common/enums/role.enum.js'
+import { HunterRank } from '../../common/enums/rank.enum.js'
+import { LifestyleType } from '../../common/enums/lifestyle.enum.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 const mockUser: IUser = {
   id: 'user-123',
@@ -19,6 +20,12 @@ const mockUser: IUser = {
   rank_level: HunterRank.E,
   xp: 0,
   coins: 0,
+  stat_points_available: 0,
+  strength: 0,
+  intel: 0,
+  vitality: 0,
+  sense: 0,
+  agility: 0,
   lifestyle: LifestyleType.HARDCORE,
   region_state: 'SP',
   region_country: 'BR',
@@ -29,10 +36,12 @@ const mockUser: IUser = {
   updated_at: new Date(),
 }
 
+const asyncMock = () => jest.fn() as jest.Mock<(...args: unknown[]) => Promise<unknown>>
+
 const mockActivitiesService = {
-  logActivity: jest.fn(),
-  getHistory: jest.fn(),
-  getSummary: jest.fn(),
+  logActivity: asyncMock(),
+  getHistory: asyncMock(),
+  getSummary: asyncMock(),
 }
 
 describe('ActivitiesController', () => {

@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common'
-import { Throttle } from '@nestjs/throttler'
+import { Throttle } from '../../common/rate-limit/rate-limit.decorator.js'
 import {
   ApiTags,
   ApiOperation,
@@ -8,13 +8,13 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger'
-import { ActivitiesService } from './activities.service'
-import { LogActivityDto } from './dto/log-activity.dto'
-import { UpdateActivityDto } from './dto/update-activity.dto'
-import { PaginationDto } from './dto/pagination.dto'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
+import { ActivitiesService } from './activities.service.js'
+import { LogActivityDto } from './dto/log-activity.dto.js'
+import { UpdateActivityDto } from './dto/update-activity.dto.js'
+import { PaginationDto } from './dto/pagination.dto.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @ApiTags('activities')
 @ApiBearerAuth('access-token')
@@ -138,8 +138,7 @@ export class ActivitiesController {
 
   @ApiOperation({
     summary: 'Deletar atividade',
-    description:
-      'Remove uma atividade e reverte o XP/coins ganhos dela (ajusta totais do Hunter).',
+    description: 'Remove uma atividade e reverte o XP/coins ganhos dela (ajusta totais do Hunter).',
   })
   @ApiParam({ name: 'id', description: 'UUID da atividade.' })
   @ApiResponse({ status: 200, description: 'Atividade deletada com sucesso.' })

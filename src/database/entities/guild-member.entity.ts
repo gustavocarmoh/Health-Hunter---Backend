@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, Index } from 'typeorm'
-import { GuildMemberRole } from '../../common/enums/guild.enum'
-import { IGuildMember } from '../../common/interfaces/guild-member.interface'
+import { GuildMemberRole } from '../../common/enums/guild.enum.js'
+import { IGuildMember } from '../../common/interfaces/guild-member.interface.js'
 
 @Entity('guild_members')
 @Unique(['guild_id', 'user_id'])

@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-import { RedisService } from '../../cache/redis.service'
-import { RankEngineService } from '../../common/rank/rank-engine.service'
-import { GuildInviteRepository } from '../../repositories/abstract/guild-invite.repository'
-import { SeasonRepository } from '../../repositories/abstract/season.repository'
+import { RedisService } from '../../cache/redis.service.js'
+import { RankEngineService } from '../../common/rank/rank-engine.service.js'
+import { GuildInviteRepository } from '../../repositories/abstract/guild-invite.repository.js'
+import { SeasonRepository } from '../../repositories/abstract/season.repository.js'
 
 @Injectable()
 export class SchedulerService {
@@ -179,5 +179,4 @@ export class SchedulerService {
       this.logger.error(`Job auto-end-expired-seasons falhou: ${(err as Error).message}`)
     }
   }
-
 }

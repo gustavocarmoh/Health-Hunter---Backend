@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, In } from 'typeorm'
-import { ActivityLogEntity } from '../../database/entities/activity-log.entity'
-import { ActivityRepository } from '../abstract/activity.repository'
-import { IActivityLog } from '../../common/interfaces/activity.interface'
+import { ActivityLogEntity } from '../../database/entities/activity-log.entity.js'
+import { ActivityRepository } from '../abstract/activity.repository.js'
+import { IActivityLog } from '../../common/interfaces/activity.interface.js'
 
 @Injectable()
 export class TypeOrmActivityRepository extends ActivityRepository {

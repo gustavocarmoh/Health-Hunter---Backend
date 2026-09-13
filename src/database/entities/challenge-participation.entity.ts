@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, Index
 import {
   IChallengeParticipation,
   ChallengeParticipationStatus,
-} from '../../common/interfaces/challenge-participation.interface'
+} from '../../common/interfaces/challenge-participation.interface.js'
 
 @Entity('challenge_participations')
 @Unique(['challenge_id', 'user_id'])

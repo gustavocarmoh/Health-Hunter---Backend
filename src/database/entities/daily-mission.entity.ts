@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm'
-import { UserEntity } from './user.entity'
+import { UserEntity } from './user.entity.js'
 
 @Entity('daily_missions')
 export class DailyMission {

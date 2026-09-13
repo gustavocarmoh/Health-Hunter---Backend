@@ -1,15 +1,16 @@
+import { jest } from '@jest/globals'
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConflictException, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
-import * as bcrypt from 'bcrypt'
-import { AuthService } from './auth.service'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { RedisService } from '../../cache/redis.service'
-import { Role } from '../../common/enums/role.enum'
-import { HunterRank } from '../../common/enums/rank.enum'
-import { LifestyleType } from '../../common/enums/lifestyle.enum'
-import { IUser } from '../../common/interfaces/user.interface'
+import bcrypt from 'bcrypt'
+import { AuthService } from './auth.service.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
+import { Role } from '../../common/enums/role.enum.js'
+import { HunterRank } from '../../common/enums/rank.enum.js'
+import { LifestyleType } from '../../common/enums/lifestyle.enum.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 const mockUser: IUser = {
   id: 'user-abc',
@@ -20,6 +21,12 @@ const mockUser: IUser = {
   rank_level: HunterRank.E,
   xp: 0,
   coins: 0,
+  stat_points_available: 0,
+  strength: 0,
+  intel: 0,
+  vitality: 0,
+  sense: 0,
+  agility: 0,
   lifestyle: LifestyleType.CASUAL,
   region_state: 'SP',
   region_country: 'BR',
@@ -30,11 +37,13 @@ const mockUser: IUser = {
   updated_at: new Date('2024-01-01'),
 }
 
+const asyncMock = () => jest.fn() as jest.Mock<(...args: unknown[]) => Promise<unknown>>
+
 const mockUserRepository = {
-  findByEmail: jest.fn(),
-  findById: jest.fn(),
-  create: jest.fn(),
-  update: jest.fn(),
+  findByEmail: asyncMock(),
+  findById: asyncMock(),
+  create: asyncMock(),
+  update: asyncMock(),
 }
 
 const mockJwtService = {
@@ -53,9 +62,9 @@ const mockConfigService = {
 }
 
 const mockRedisService = {
-  get: jest.fn(),
-  set: jest.fn(),
-  del: jest.fn(),
+  get: asyncMock(),
+  set: asyncMock(),
+  del: asyncMock(),
 }
 
 describe('AuthService', () => {

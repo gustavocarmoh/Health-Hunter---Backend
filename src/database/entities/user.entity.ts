@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm'
-import { Role } from '../../common/enums/role.enum'
-import { HunterRank } from '../../common/enums/rank.enum'
-import { LifestyleType } from '../../common/enums/lifestyle.enum'
-import { IUser } from '../../common/interfaces/user.interface'
+import { Role } from '../../common/enums/role.enum.js'
+import { HunterRank } from '../../common/enums/rank.enum.js'
+import { LifestyleType } from '../../common/enums/lifestyle.enum.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @Entity('users')
 export class UserEntity implements IUser {

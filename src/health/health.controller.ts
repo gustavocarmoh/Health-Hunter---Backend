@@ -6,7 +6,7 @@ import {
   MemoryHealthIndicator,
 } from '@nestjs/terminus'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { RedisHealthIndicator } from './redis-health.indicator'
+import { RedisHealthIndicator } from './redis-health.indicator.js'
 
 @ApiTags('health')
 @Controller('health')

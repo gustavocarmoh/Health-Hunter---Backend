@@ -4,10 +4,10 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common'
-import { StoreItemRepository } from '../../repositories/abstract/store-item.repository'
-import { HunterItemRepository } from '../../repositories/abstract/hunter-item.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { RedisService } from '../../cache/redis.service'
+import { StoreItemRepository } from '../../repositories/abstract/store-item.repository.js'
+import { HunterItemRepository } from '../../repositories/abstract/hunter-item.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
 
 @Injectable()
 export class StoreService {

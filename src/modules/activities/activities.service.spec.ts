@@ -1,16 +1,17 @@
+import { jest } from '@jest/globals'
 import { Test, TestingModule } from '@nestjs/testing'
 import { NotFoundException, BadRequestException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { ActivitiesService } from './activities.service'
-import { ActivityRepository } from '../../repositories/abstract/activity.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { RedisService } from '../../cache/redis.service'
-import { RankEngineService } from '../../common/rank/rank-engine.service'
-import { Role } from '../../common/enums/role.enum'
-import { HunterRank } from '../../common/enums/rank.enum'
-import { LifestyleType } from '../../common/enums/lifestyle.enum'
-import { IUser } from '../../common/interfaces/user.interface'
-import { IActivityLog } from '../../common/interfaces/activity.interface'
+import { ActivitiesService } from './activities.service.js'
+import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
+import { RankEngineService } from '../../common/rank/rank-engine.service.js'
+import { Role } from '../../common/enums/role.enum.js'
+import { HunterRank } from '../../common/enums/rank.enum.js'
+import { LifestyleType } from '../../common/enums/lifestyle.enum.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
+import { IActivityLog } from '../../common/interfaces/activity.interface.js'
 
 const mockUser: IUser = {
   id: 'user-xyz',
@@ -21,6 +22,12 @@ const mockUser: IUser = {
   rank_level: HunterRank.E,
   xp: 0,
   coins: 0,
+  stat_points_available: 0,
+  strength: 0,
+  intel: 0,
+  vitality: 0,
+  sense: 0,
+  agility: 0,
   lifestyle: LifestyleType.HARDCORE,
   region_state: 'SP',
   region_country: 'BR',
@@ -44,22 +51,24 @@ const mockActivity: IActivityLog = {
   logged_at: new Date('2024-06-01'),
 }
 
+const asyncMock = () => jest.fn() as jest.Mock<(...args: unknown[]) => Promise<unknown>>
+
 const mockActivityRepository = {
-  create: jest.fn(),
-  findByUserId: jest.fn(),
-  findAllByUserId: jest.fn(),
-  findById: jest.fn(),
-  findByUserIdSince: jest.fn(),
+  create: asyncMock(),
+  findByUserId: asyncMock(),
+  findAllByUserId: asyncMock(),
+  findById: asyncMock(),
+  findByUserIdSince: asyncMock(),
 }
 
 const mockUserRepository = {
-  findById: jest.fn(),
-  update: jest.fn(),
+  findById: asyncMock(),
+  update: asyncMock(),
 }
 
 const mockRedisService = {
-  del: jest.fn(),
-  invalidatePattern: jest.fn(),
+  del: asyncMock(),
+  invalidatePattern: asyncMock(),
 }
 
 const mockEventEmitter = {
@@ -67,7 +76,7 @@ const mockEventEmitter = {
 }
 
 const mockRankEngineService = {
-  checkPromotion: jest.fn(),
+  checkPromotion: asyncMock(),
 }
 
 describe('ActivitiesService', () => {

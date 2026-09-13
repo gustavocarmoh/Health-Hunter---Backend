@@ -1,4 +1,4 @@
-import { Role } from '../../../common/enums/role.enum'
+import { Role } from '../../../common/enums/role.enum.js'
 
 /**
  * JSON Schema (AJV draft-07) para validação do payload de atribuição de Role.

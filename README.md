@@ -209,7 +209,7 @@ health-hunter-bff/
 ├── .env.example
 ├── .gitignore
 ├── CLAUDE.md                    # Convenções e padrões arquiteturais do projeto
-├── commitlint.config.js         # Regras de Conventional Commits
+├── commitlint.config.cjs         # Regras de Conventional Commits
 ├── docker-compose.yml           # PostgreSQL 16 + Redis 7 (desenvolvimento local)
 ├── Dockerfile                   # Multi-stage: builder (Node 25) + production
 ├── nest-cli.json

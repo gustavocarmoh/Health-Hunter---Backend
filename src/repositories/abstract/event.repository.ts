@@ -1,4 +1,4 @@
-import { IEvent, IEventParticipant } from '../../common/interfaces/event.interface'
+import { IEvent, IEventParticipant } from '../../common/interfaces/event.interface.js'
 
 /**
  * Contrato abstrato do repositório de eventos e participações.

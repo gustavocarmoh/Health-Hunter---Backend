@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { BodyMeasurementEntity } from '../../database/entities/body-measurement.entity'
-import { BodyMeasurementRepository } from '../abstract/body-measurement.repository'
-import { IBodyMeasurement } from '../../common/interfaces/body-measurement.interface'
+import { BodyMeasurementEntity } from '../../database/entities/body-measurement.entity.js'
+import { BodyMeasurementRepository } from '../abstract/body-measurement.repository.js'
+import { IBodyMeasurement } from '../../common/interfaces/body-measurement.interface.js'
 
 @Injectable()
 export class TypeOrmBodyMeasurementRepository extends BodyMeasurementRepository {

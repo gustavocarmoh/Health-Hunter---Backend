@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { FollowRepository } from '../../repositories/abstract/follow.repository'
-import { RedisService } from '../../cache/redis.service'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { FollowRepository } from '../../repositories/abstract/follow.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
 
 const LEADERBOARD_SIZE = 100
 const LEADERBOARD_TTL = 300 // 5 minutes

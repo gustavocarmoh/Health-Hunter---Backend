@@ -1,5 +1,5 @@
-import { IChallenge } from '../../common/interfaces/challenge.interface'
-import { HunterRank } from '../../common/enums/rank.enum'
+import { IChallenge } from '../../common/interfaces/challenge.interface.js'
+import { HunterRank } from '../../common/enums/rank.enum.js'
 
 /**
  * Contrato abstrato do repositório de desafios gamificados (Quests e Raids).

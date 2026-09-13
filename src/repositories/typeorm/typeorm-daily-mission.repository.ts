@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, LessThan } from 'typeorm'
-import { DailyMission } from '../../database/entities/daily-mission.entity'
-import { DailyMissionRepository } from '../abstract/daily-mission.repository'
+import { DailyMission } from '../../database/entities/daily-mission.entity.js'
+import { DailyMissionRepository } from '../abstract/daily-mission.repository.js'
 
 @Injectable()
 export class TypeOrmDailyMissionRepository extends DailyMissionRepository {
-  constructor(
-    @InjectRepository(DailyMission) private readonly repo: Repository<DailyMission>,
-  ) {
+  constructor(@InjectRepository(DailyMission) private readonly repo: Repository<DailyMission>) {
     super()
   }
 

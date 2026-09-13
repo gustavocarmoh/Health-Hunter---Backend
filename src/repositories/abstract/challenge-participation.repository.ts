@@ -1,4 +1,4 @@
-import { IChallengeParticipation } from '../../common/interfaces/challenge-participation.interface'
+import { IChallengeParticipation } from '../../common/interfaces/challenge-participation.interface.js'
 
 export abstract class ChallengeParticipationRepository {
   abstract create(

@@ -49,4 +49,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
 # Inicia a aplicação compilada diretamente com Node (sem ts-node)
-CMD ["node", "dist/main"]
+CMD ["node", "dist/main.js"]

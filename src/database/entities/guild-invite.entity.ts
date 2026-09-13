@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm'
-import { GuildInviteStatus } from '../../common/enums/guild.enum'
-import { IGuildInvite } from '../../common/interfaces/guild-invite.interface'
+import { GuildInviteStatus } from '../../common/enums/guild.enum.js'
+import { IGuildInvite } from '../../common/interfaces/guild-invite.interface.js'
 
 @Entity('guild_invites')
 @Index(['invited_user_id', 'status'])

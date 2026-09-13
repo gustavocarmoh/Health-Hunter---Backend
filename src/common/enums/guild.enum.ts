@@ -1,4 +1,4 @@
-import { HunterRank } from './rank.enum'
+import { HunterRank } from './rank.enum.js'
 
 /** Papéis possíveis de um membro dentro de uma guilda */
 export enum GuildMemberRole {

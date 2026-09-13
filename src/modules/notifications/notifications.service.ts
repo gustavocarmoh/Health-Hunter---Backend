@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { NotificationRepository } from '../../repositories/abstract/notification.repository'
+import { NotificationRepository } from '../../repositories/abstract/notification.repository.js'
 
 @Injectable()
 export class NotificationsService {

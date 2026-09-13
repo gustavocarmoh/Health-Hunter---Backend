@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, ILike } from 'typeorm'
-import { GuildEntity } from '../../database/entities/guild.entity'
-import { GuildRepository } from '../abstract/guild.repository'
-import { IGuild } from '../../common/interfaces/guild.interface'
+import { GuildEntity } from '../../database/entities/guild.entity.js'
+import { GuildRepository } from '../abstract/guild.repository.js'
+import { IGuild } from '../../common/interfaces/guild.interface.js'
 
 /**
  * Implementação TypeORM do GuildRepository.

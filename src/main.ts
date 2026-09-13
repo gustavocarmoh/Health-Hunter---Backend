@@ -3,7 +3,7 @@ import { ValidationPipe, Logger } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { Logger as PinoLogger } from 'nestjs-pino'
 import helmet from 'helmet'
-import { AppModule } from './app.module'
+import { AppModule } from './app.module.js'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true })

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index, Unique } from 'typeorm'
-import { IEventParticipant } from '../../common/interfaces/event.interface'
+import { IEventParticipant } from '../../common/interfaces/event.interface.js'
 
 @Entity('event_participants')
 @Unique(['event_id', 'user_id'])

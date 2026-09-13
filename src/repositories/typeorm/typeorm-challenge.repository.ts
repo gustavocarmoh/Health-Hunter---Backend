@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from 'typeorm'
-import { ChallengeEntity } from '../../database/entities/challenge.entity'
-import { ChallengeRepository } from '../abstract/challenge.repository'
-import { IChallenge } from '../../common/interfaces/challenge.interface'
-import { HunterRank } from '../../common/enums/rank.enum'
+import { ChallengeEntity } from '../../database/entities/challenge.entity.js'
+import { ChallengeRepository } from '../abstract/challenge.repository.js'
+import { IChallenge } from '../../common/interfaces/challenge.interface.js'
+import { HunterRank } from '../../common/enums/rank.enum.js'
 
 @Injectable()
 export class TypeOrmChallengeRepository extends ChallengeRepository {

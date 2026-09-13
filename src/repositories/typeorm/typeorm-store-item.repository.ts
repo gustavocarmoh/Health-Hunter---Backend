@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { StoreItemEntity } from '../../database/entities/store-item.entity'
-import { StoreItemRepository } from '../abstract/store-item.repository'
-import { IStoreItem } from '../../common/interfaces/store-item.interface'
+import { StoreItemEntity } from '../../database/entities/store-item.entity.js'
+import { StoreItemRepository } from '../abstract/store-item.repository.js'
+import { IStoreItem } from '../../common/interfaces/store-item.interface.js'
 
 @Injectable()
 export class TypeOrmStoreItemRepository extends StoreItemRepository {

@@ -1,6 +1,6 @@
-import { Role } from '../enums/role.enum'
-import { HunterRank } from '../enums/rank.enum'
-import { LifestyleType } from '../enums/lifestyle.enum'
+import { Role } from '../enums/role.enum.js'
+import { HunterRank } from '../enums/rank.enum.js'
+import { LifestyleType } from '../enums/lifestyle.enum.js'
 
 export interface IUser {
   id: string

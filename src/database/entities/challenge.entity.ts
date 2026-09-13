@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm'
-import { IChallenge } from '../../common/interfaces/challenge.interface'
+import { IChallenge } from '../../common/interfaces/challenge.interface.js'
 
 @Entity('challenges')
 export class ChallengeEntity implements IChallenge {

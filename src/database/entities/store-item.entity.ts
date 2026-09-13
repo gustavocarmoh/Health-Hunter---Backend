@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm'
-import { StoreItemType } from '../../common/interfaces/store-item.interface'
+import { StoreItemType } from '../../common/interfaces/store-item.interface.js'
 
 @Entity('store_items')
 export class StoreItemEntity {

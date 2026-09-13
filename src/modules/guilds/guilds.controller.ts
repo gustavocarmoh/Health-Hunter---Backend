@@ -7,11 +7,11 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger'
-import { GuildsService } from './guilds.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
-import { GuildMemberRole } from '../../common/enums/guild.enum'
+import { GuildsService } from './guilds.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
+import { GuildMemberRole } from '../../common/enums/guild.enum.js'
 
 @ApiTags('guilds')
 @ApiBearerAuth('access-token')

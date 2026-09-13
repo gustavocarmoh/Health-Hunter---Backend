@@ -1,5 +1,5 @@
-import { IGuildInvite } from '../../common/interfaces/guild-invite.interface'
-import { GuildInviteStatus } from '../../common/enums/guild.enum'
+import { IGuildInvite } from '../../common/interfaces/guild-invite.interface.js'
+import { GuildInviteStatus } from '../../common/enums/guild.enum.js'
 
 /**
  * Contrato abstrato para operações de convites de guilda.

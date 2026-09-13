@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Body } from '@nestjs/common'
+import { Controller, Get, Post, Patch, Delete, Param, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
-import { ChallengesService } from './challenges.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
+import { ChallengesService } from './challenges.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @ApiTags('challenges')
 @ApiBearerAuth('access-token')
@@ -111,7 +111,8 @@ export class ChallengesController {
 
   @ApiOperation({
     summary: 'Deletar desafio',
-    description: 'Remove um desafio (admin only). Todas as participações ativas são marcadas como ABANDONED.',
+    description:
+      'Remove um desafio (admin only). Todas as participações ativas são marcadas como ABANDONED.',
   })
   @ApiParam({ name: 'id', description: 'UUID do desafio.' })
   @ApiResponse({ status: 200, description: 'Desafio deletado.' })

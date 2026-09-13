@@ -126,4 +126,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async ping(): Promise<void> {
     await this.client.ping()
   }
+
+  /**
+   * Incrementa um contador atômico e define seu TTL na primeira chamada.
+   * Usado para implementar rate limiting em janela fixa.
+   *
+   * @param key - Chave do contador
+   * @param ttlSeconds - Tempo de expiração aplicado apenas quando o contador é criado
+   * @returns Valor do contador após o incremento
+   */
+  async increment(key: string, ttlSeconds: number): Promise<number> {
+    const count = await this.client.incr(key)
+    if (count === 1) {
+      await this.client.expire(key, ttlSeconds)
+    }
+    return count
+  }
 }

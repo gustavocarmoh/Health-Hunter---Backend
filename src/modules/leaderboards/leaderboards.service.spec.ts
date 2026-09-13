@@ -1,13 +1,14 @@
+import { jest } from '@jest/globals'
 import { Test, TestingModule } from '@nestjs/testing'
 import { NotFoundException } from '@nestjs/common'
-import { LeaderboardsService } from './leaderboards.service'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { FollowRepository } from '../../repositories/abstract/follow.repository'
-import { RedisService } from '../../cache/redis.service'
-import { Role } from '../../common/enums/role.enum'
-import { HunterRank } from '../../common/enums/rank.enum'
-import { LifestyleType } from '../../common/enums/lifestyle.enum'
-import { IUser } from '../../common/interfaces/user.interface'
+import { LeaderboardsService } from './leaderboards.service.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { FollowRepository } from '../../repositories/abstract/follow.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
+import { Role } from '../../common/enums/role.enum.js'
+import { HunterRank } from '../../common/enums/rank.enum.js'
+import { LifestyleType } from '../../common/enums/lifestyle.enum.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 const buildUser = (overrides: Partial<IUser> = {}): IUser => ({
   id: 'user-001',
@@ -18,6 +19,12 @@ const buildUser = (overrides: Partial<IUser> = {}): IUser => ({
   rank_level: HunterRank.S,
   xp: 120000,
   coins: 60000,
+  stat_points_available: 0,
+  strength: 0,
+  intel: 0,
+  vitality: 0,
+  sense: 0,
+  agility: 0,
   lifestyle: LifestyleType.HARDCORE,
   region_state: 'SP',
   region_country: 'BR',
@@ -35,21 +42,23 @@ const topUsers = [
   buildUser({ id: 'u3', xp: 120000 }),
 ]
 
+const asyncMock = () => jest.fn() as jest.Mock<(...args: unknown[]) => Promise<unknown>>
+
 const mockUserRepository = {
-  findLeaderboard: jest.fn(),
-  findLeaderboardCursor: jest.fn(),
-  findById: jest.fn(),
-  countWithMoreXp: jest.fn(),
-  findByIds: jest.fn(),
+  findLeaderboard: asyncMock(),
+  findLeaderboardCursor: asyncMock(),
+  findById: asyncMock(),
+  countWithMoreXp: asyncMock(),
+  findByIds: asyncMock(),
 }
 
 const mockFollowRepository = {
-  findFollowingIds: jest.fn(),
+  findFollowingIds: asyncMock(),
 }
 
 const mockRedisService = {
-  get: jest.fn(),
-  set: jest.fn(),
+  get: asyncMock(),
+  set: asyncMock(),
 }
 
 describe('LeaderboardsService', () => {

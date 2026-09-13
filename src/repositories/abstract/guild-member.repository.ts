@@ -1,5 +1,5 @@
-import { IGuildMember } from '../../common/interfaces/guild-member.interface'
-import { GuildMemberRole } from '../../common/enums/guild.enum'
+import { IGuildMember } from '../../common/interfaces/guild-member.interface.js'
+import { GuildMemberRole } from '../../common/enums/guild.enum.js'
 
 /**
  * Contrato abstrato para operações de membros de guildas.

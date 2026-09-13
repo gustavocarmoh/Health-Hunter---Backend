@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm'
-import { IActivityLog, IGpsCoordinates } from '../../common/interfaces/activity.interface'
+import { IActivityLog, IGpsCoordinates } from '../../common/interfaces/activity.interface.js'
 
 @Entity('activity_logs')
 @Index(['user_id', 'logged_at'])

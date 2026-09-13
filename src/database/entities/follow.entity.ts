@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, Index } from 'typeorm'
-import { IFollow } from '../../common/interfaces/follow.interface'
+import { IFollow } from '../../common/interfaces/follow.interface.js'
 
 @Entity('follows')
 @Unique(['follower_id', 'following_id'])

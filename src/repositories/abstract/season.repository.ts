@@ -1,4 +1,4 @@
-import { ISeason } from '../../common/interfaces/season.interface'
+import { ISeason } from '../../common/interfaces/season.interface.js'
 
 export abstract class SeasonRepository {
   abstract findCurrent(): Promise<ISeason | null>

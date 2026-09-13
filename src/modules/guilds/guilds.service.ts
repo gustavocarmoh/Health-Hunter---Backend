@@ -6,11 +6,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
-import { GuildRepository } from '../../repositories/abstract/guild.repository'
-import { GuildMemberRepository } from '../../repositories/abstract/guild-member.repository'
-import { GuildInviteRepository } from '../../repositories/abstract/guild-invite.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { RedisService } from '../../cache/redis.service'
+import { GuildRepository } from '../../repositories/abstract/guild.repository.js'
+import { GuildMemberRepository } from '../../repositories/abstract/guild-member.repository.js'
+import { GuildInviteRepository } from '../../repositories/abstract/guild-invite.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
 import {
   GuildMemberRole,
   GuildInviteStatus,
@@ -19,8 +19,8 @@ import {
   GUILD_CREATE_MIN_RANK,
   GUILD_INVITE_TTL_DAYS,
   computeGuildRank,
-} from '../../common/enums/guild.enum'
-import { RANK_ORDER } from '../../common/enums/rank.enum'
+} from '../../common/enums/guild.enum.js'
+import { RANK_ORDER } from '../../common/enums/rank.enum.js'
 
 /** Dados mínimos para criar uma guilda */
 interface CreateGuildInput {

@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm'
-import { HunterRank } from '../../common/enums/rank.enum'
-import { IGuild } from '../../common/interfaces/guild.interface'
+import { HunterRank } from '../../common/enums/rank.enum.js'
+import { IGuild } from '../../common/interfaces/guild.interface.js'
 
 @Entity('guilds')
 @Index(['tag'], { unique: true })

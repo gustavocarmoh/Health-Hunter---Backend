@@ -1,13 +1,13 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common'
-import { AdminService } from './admin.service'
-import { AdminController } from './admin.controller'
-import { RepositoriesModule } from '../../repositories/repositories.module'
-import { createAjvMiddleware } from '../../common/middleware/ajv-body.middleware'
-import { assignRoleSchema } from './dto/assign-role.schema'
-import { assignRankSchema } from './dto/assign-rank.schema'
-import { createChallengeSchema } from './dto/create-challenge.schema'
-import { createEventSchema } from './dto/create-event.schema'
-import { updateEventSchema } from './dto/update-event.schema'
+import { AdminService } from './admin.service.js'
+import { AdminController } from './admin.controller.js'
+import { RepositoriesModule } from '../../repositories/repositories.module.js'
+import { createAjvMiddleware } from '../../common/middleware/ajv-body.middleware.js'
+import { assignRoleSchema } from './dto/assign-role.schema.js'
+import { assignRankSchema } from './dto/assign-rank.schema.js'
+import { createChallengeSchema } from './dto/create-challenge.schema.js'
+import { createEventSchema } from './dto/create-event.schema.js'
+import { updateEventSchema } from './dto/update-event.schema.js'
 
 @Module({
   imports: [RepositoriesModule],
