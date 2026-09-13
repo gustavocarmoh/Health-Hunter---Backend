@@ -1,4 +1,4 @@
-name: PR Gate — RC obrigatório para main/master
+name: PR Gate — branch de origem válida para main/master
 
 # Roda em todo PR aberto, sincronizado ou reaberto contra main/master
 on:
@@ -9,8 +9,8 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  validate-rc-branch:
-    name: Verificar branch RC
+  validate-branch:
+    name: Verificar branch de origem
     runs-on: ubuntu-latest
     steps:
       - name: Checar nome da branch de origem
@@ -18,25 +18,26 @@ jobs:
           BRANCH="${{ github.head_ref }}"
 
           # Padrões aceitos:
-          #   rc/v1.2.3
-          #   rc/1.2.3
-          #   rc/sprint-42
-          #   release/v1.2.3
-          #   release/1.2.3
-          if [[ "$BRANCH" =~ ^rc/ ]] || [[ "$BRANCH" =~ ^release/ ]]; then
-            echo "✅ Branch RC válida: $BRANCH"
+          #   rc/v1.2.3 · rc/1.2.3 · rc/sprint-42
+          #   release/v1.2.3 · release/1.2.3
+          #   Prefixos de Conventional Commits (mesmos tipos aceitos pelo commitlint):
+          #   feat/* · fix/* · docs/* · style/* · refactor/* · test/* · chore/* ·
+          #   perf/* · ci/* · build/* · revert/*
+          if [[ "$BRANCH" =~ ^(rc|release|feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)/ ]]; then
+            echo "✅ Branch válida: $BRANCH"
             exit 0
           fi
 
-          echo "❌ PRs para main/master só são permitidos a partir de branches RC."
+          echo "❌ PRs para main/master só são permitidos a partir de branches com prefixo reconhecido."
           echo ""
           echo "   Branch atual : $BRANCH"
-          echo "   Padrões aceitos: rc/* · release/*"
+          echo "   Padrões aceitos: rc/* · release/* · feat/* · fix/* · docs/* · style/* ·"
+          echo "                    refactor/* · test/* · chore/* · perf/* · ci/* · build/* · revert/*"
           echo ""
           echo "   Exemplos válidos:"
           echo "     rc/v1.2.0"
-          echo "     rc/sprint-10"
-          echo "     release/v1.2.0"
+          echo "     feat/leaderboard-cache"
+          echo "     chore/upgrade-nestjs-v12"
           echo ""
-          echo "   Crie a branch de release e abra o PR a partir dela."
+          echo "   Renomeie a branch ou abra o PR a partir de uma com prefixo válido."
           exit 1
