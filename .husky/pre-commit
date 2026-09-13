@@ -5,7 +5,7 @@ npx lint-staged
 
 echo ""
 echo "🧪 Executando testes unitários..."
-npx jest --passWithNoTests --forceExit --silent
+npm test -- --passWithNoTests --forceExit --silent
 
 echo ""
 echo "✅ pre-commit concluído com sucesso"

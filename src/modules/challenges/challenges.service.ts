@@ -5,12 +5,12 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common'
-import { ChallengeRepository } from '../../repositories/abstract/challenge.repository'
-import { ChallengeParticipationRepository } from '../../repositories/abstract/challenge-participation.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { ActivityRepository } from '../../repositories/abstract/activity.repository'
-import { RedisService } from '../../cache/redis.service'
-import { RANK_ORDER } from '../../common/enums/rank.enum'
+import { ChallengeRepository } from '../../repositories/abstract/challenge.repository.js'
+import { ChallengeParticipationRepository } from '../../repositories/abstract/challenge-participation.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
+import { RANK_ORDER } from '../../common/enums/rank.enum.js'
 
 @Injectable()
 export class ChallengesService {

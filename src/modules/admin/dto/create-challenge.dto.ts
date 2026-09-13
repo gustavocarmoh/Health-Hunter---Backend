@@ -10,7 +10,7 @@ import {
   IsDateString,
 } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { HunterRank } from '../../../common/enums/rank.enum'
+import { HunterRank } from '../../../common/enums/rank.enum.js'
 
 export class CreateChallengeDto {
   @ApiProperty({

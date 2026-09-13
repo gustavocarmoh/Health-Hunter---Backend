@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { UserRepository } from '../../repositories/abstract/user.repository'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
 import {
   HunterRank,
   RANK_ORDER,
@@ -10,8 +10,8 @@ import {
   RANK_WEEKLY_MINIMUM_XP,
   RANK_XP_FLOOR,
   REGIONAL_PRESSURE_ALPHA,
-} from '../enums/rank.enum'
-import { IUser } from '../interfaces/user.interface'
+} from '../enums/rank.enum.js'
+import { IUser } from '../interfaces/user.interface.js'
 
 export interface DecayReport {
   /** Hunters que perderam XP por inatividade */

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { AiMessageEntity, MessageRole } from '../../database/entities/ai-message.entity'
-import { AiMessageRepository } from '../abstract/ai-message.repository'
+import { AiMessageEntity, MessageRole } from '../../database/entities/ai-message.entity.js'
+import { AiMessageRepository } from '../abstract/ai-message.repository.js'
 
 @Injectable()
 export class TypeOrmAiMessageRepository extends AiMessageRepository {

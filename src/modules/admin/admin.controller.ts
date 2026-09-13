@@ -7,18 +7,18 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger'
-import { AdminService } from './admin.service'
-import { AssignRoleDto } from './dto/assign-role.dto'
-import { AssignRankDto } from './dto/assign-rank.dto'
-import { CreateChallengeDto } from './dto/create-challenge.dto'
-import { CreateEventDto } from './dto/create-event.dto'
-import { UpdateEventDto } from './dto/update-event.dto'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { Role } from '../../common/enums/role.enum'
-import { IUser } from '../../common/interfaces/user.interface'
+import { AdminService } from './admin.service.js'
+import { AssignRoleDto } from './dto/assign-role.dto.js'
+import { AssignRankDto } from './dto/assign-rank.dto.js'
+import { CreateChallengeDto } from './dto/create-challenge.dto.js'
+import { CreateEventDto } from './dto/create-event.dto.js'
+import { UpdateEventDto } from './dto/update-event.dto.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { RolesGuard } from '../../common/guards/roles.guard.js'
+import { Roles } from '../../common/decorators/roles.decorator.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { Role } from '../../common/enums/role.enum.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @ApiTags('admin')
 @ApiBearerAuth('access-token')

@@ -1,4 +1,4 @@
-import { AiMessageEntity, MessageRole } from '../../database/entities/ai-message.entity'
+import { AiMessageEntity, MessageRole } from '../../database/entities/ai-message.entity.js'
 
 export abstract class AiMessageRepository {
   abstract create(data: {

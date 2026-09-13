@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm'
-import { IEvent } from '../../common/interfaces/event.interface'
+import { IEvent } from '../../common/interfaces/event.interface.js'
 
 @Entity('events')
 export class EventEntity implements IEvent {

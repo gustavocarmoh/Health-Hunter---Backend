@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { SeasonEntity } from '../../database/entities/season.entity'
-import { SeasonRepository } from '../abstract/season.repository'
-import { ISeason } from '../../common/interfaces/season.interface'
+import { SeasonEntity } from '../../database/entities/season.entity.js'
+import { SeasonRepository } from '../abstract/season.repository.js'
+import { ISeason } from '../../common/interfaces/season.interface.js'
 
 @Injectable()
 export class TypeOrmSeasonRepository extends SeasonRepository {

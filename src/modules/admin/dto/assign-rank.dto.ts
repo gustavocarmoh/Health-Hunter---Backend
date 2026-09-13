@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
-import { HunterRank } from '../../../common/enums/rank.enum'
+import { HunterRank } from '../../../common/enums/rank.enum.js'
 
 export class AssignRankDto {
   @ApiProperty({

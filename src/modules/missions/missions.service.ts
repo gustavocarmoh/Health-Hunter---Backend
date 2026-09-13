@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { DailyMissionRepository } from '../../repositories/abstract/daily-mission.repository'
-import { DailyMission } from '../../database/entities/daily-mission.entity'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { DailyMissionRepository } from '../../repositories/abstract/daily-mission.repository.js'
 
 export interface Mission {
   id: string
@@ -98,7 +97,7 @@ export class MissionsService {
 
     if (existingMissions.length > 0) {
       throw new ConflictException(
-        'Você já gerou suas missões diárias hoje. Volte amanhã para gerar novas missões.'
+        'Você já gerou suas missões diárias hoje. Volte amanhã para gerar novas missões.',
       )
     }
 
@@ -120,8 +119,8 @@ export class MissionsService {
           done: false,
           daily: true,
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // expires in 24 hours
-        })
-      )
+        }),
+      ),
     )
 
     return createdMissions.map((m) => ({
@@ -136,13 +135,16 @@ export class MissionsService {
     }))
   }
 
-  async createIndividual(userId: string, data: {
-    name: string
-    category: string
-    difficulty: string
-    xp: number
-    icon?: string
-  }): Promise<Mission> {
+  async createIndividual(
+    userId: string,
+    data: {
+      name: string
+      category: string
+      difficulty: string
+      xp: number
+      icon?: string
+    },
+  ): Promise<Mission> {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
 
@@ -182,7 +184,7 @@ export class MissionsService {
 
     // Calculate XP delta based on status change
     const wasDone = mission.done
-    const xpDelta = done && !wasDone ? mission.xp : (!done && wasDone ? -mission.xp : 0)
+    const xpDelta = done && !wasDone ? mission.xp : !done && wasDone ? -mission.xp : 0
 
     // Update mission in database
     mission.done = done
@@ -205,5 +207,4 @@ export class MissionsService {
       daily: updated.daily,
     }
   }
-
 }

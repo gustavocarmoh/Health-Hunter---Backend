@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm'
-import { INotification } from '../../common/interfaces/notification.interface'
+import { INotification } from '../../common/interfaces/notification.interface.js'
 
 @Entity('notifications')
 @Index(['user_id', 'is_read'])

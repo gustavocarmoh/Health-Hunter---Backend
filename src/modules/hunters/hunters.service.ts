@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { ActivityRepository } from '../../repositories/abstract/activity.repository'
-import { FollowRepository } from '../../repositories/abstract/follow.repository'
-import { BodyMeasurementRepository } from '../../repositories/abstract/body-measurement.repository'
-import { RedisService } from '../../cache/redis.service'
-import { UpdateHunterProfileDto } from './dto/update-hunter-profile.dto'
-import { IUser } from '../../common/interfaces/user.interface'
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
+import { FollowRepository } from '../../repositories/abstract/follow.repository.js'
+import { BodyMeasurementRepository } from '../../repositories/abstract/body-measurement.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
+import { UpdateHunterProfileDto } from './dto/update-hunter-profile.dto.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 const PROFILE_TTL = 30 // seconds
 
@@ -397,11 +402,11 @@ export class HuntersService {
     const validAttributes = ['strength', 'intel', 'vitality', 'sense', 'agility']
     if (!validAttributes.includes(attribute)) {
       throw new BadRequestException(
-        `Invalid attribute. Must be one of: ${validAttributes.join(', ')}`
+        `Invalid attribute. Must be one of: ${validAttributes.join(', ')}`,
       )
     }
 
-    const update: Record<string, any> = {
+    const update: Record<string, number> = {
       stat_points_available: user.stat_points_available - 1,
       [attribute]: (user[attribute as keyof IUser] as number) + 1,
     }

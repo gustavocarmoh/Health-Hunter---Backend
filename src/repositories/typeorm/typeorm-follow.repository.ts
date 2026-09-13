@@ -1,9 +1,9 @@
 import { Injectable, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { FollowEntity } from '../../database/entities/follow.entity'
-import { FollowRepository } from '../abstract/follow.repository'
-import { IFollow } from '../../common/interfaces/follow.interface'
+import { FollowEntity } from '../../database/entities/follow.entity.js'
+import { FollowRepository } from '../abstract/follow.repository.js'
+import { IFollow } from '../../common/interfaces/follow.interface.js'
 
 @Injectable()
 export class TypeOrmFollowRepository extends FollowRepository {

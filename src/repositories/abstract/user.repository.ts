@@ -1,4 +1,4 @@
-import { IUser } from '../../common/interfaces/user.interface'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 /**
  * Contrato abstrato do repositório de usuários.

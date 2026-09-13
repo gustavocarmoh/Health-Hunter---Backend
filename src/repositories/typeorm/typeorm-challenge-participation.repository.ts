@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { ChallengeParticipationEntity } from '../../database/entities/challenge-participation.entity'
-import { ChallengeParticipationRepository } from '../abstract/challenge-participation.repository'
-import { IChallengeParticipation } from '../../common/interfaces/challenge-participation.interface'
+import { ChallengeParticipationEntity } from '../../database/entities/challenge-participation.entity.js'
+import { ChallengeParticipationRepository } from '../abstract/challenge-participation.repository.js'
+import { IChallengeParticipation } from '../../common/interfaces/challenge-participation.interface.js'
 
 @Injectable()
 export class TypeOrmChallengeParticipationRepository extends ChallengeParticipationRepository {

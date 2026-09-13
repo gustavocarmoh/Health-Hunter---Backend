@@ -1,4 +1,4 @@
-import { LifestyleType } from '../../../common/enums/lifestyle.enum'
+import { LifestyleType } from '../../../common/enums/lifestyle.enum.js'
 
 /**
  * JSON Schema (AJV draft-07) para validação do payload de atualização de perfil.

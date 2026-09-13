@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { ActivityRepository } from '../../repositories/abstract/activity.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { RedisService } from '../../cache/redis.service'
-import { RankEngineService } from '../../common/rank/rank-engine.service'
-import { LogActivityDto } from './dto/log-activity.dto'
-import { UpdateActivityDto } from './dto/update-activity.dto'
-import { RANK_XP_MULTIPLIERS } from '../../common/enums/rank.enum'
+import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { RedisService } from '../../cache/redis.service.js'
+import { RankEngineService } from '../../common/rank/rank-engine.service.js'
+import { LogActivityDto } from './dto/log-activity.dto.js'
+import { UpdateActivityDto } from './dto/update-activity.dto.js'
+import { RANK_XP_MULTIPLIERS } from '../../common/enums/rank.enum.js'
+import { IActivityLog } from '../../common/interfaces/activity.interface.js'
 
 const XP_BASE_PER_ACTIVITY = 100
 const COINS_BASE_PER_ACTIVITY = 50
@@ -281,7 +282,7 @@ export class ActivitiesService {
       throw new NotFoundException('Activity not found.')
     }
 
-    const updatedData: any = {}
+    const updatedData: Partial<IActivityLog> = {}
     if (dto.distancia_m !== undefined) updatedData.distancia_m = dto.distancia_m
     if (dto.duracao_seg !== undefined) updatedData.duracao_seg = dto.duracao_seg
     if (dto.tipo_exercicio !== undefined) updatedData.tipo_exercicio = dto.tipo_exercicio

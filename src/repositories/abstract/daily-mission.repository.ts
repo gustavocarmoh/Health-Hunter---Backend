@@ -1,4 +1,4 @@
-import { DailyMission } from '../../database/entities/daily-mission.entity'
+import { DailyMission } from '../../database/entities/daily-mission.entity.js'
 
 export abstract class DailyMissionRepository {
   abstract create(data: Partial<DailyMission>): Promise<DailyMission>

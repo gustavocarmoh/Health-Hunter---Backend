@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { LessThan, Repository } from 'typeorm'
-import { GuildInviteEntity } from '../../database/entities/guild-invite.entity'
-import { GuildInviteRepository } from '../abstract/guild-invite.repository'
-import { IGuildInvite } from '../../common/interfaces/guild-invite.interface'
-import { GuildInviteStatus } from '../../common/enums/guild.enum'
+import { GuildInviteEntity } from '../../database/entities/guild-invite.entity.js'
+import { GuildInviteRepository } from '../abstract/guild-invite.repository.js'
+import { IGuildInvite } from '../../common/interfaces/guild-invite.interface.js'
+import { GuildInviteStatus } from '../../common/enums/guild.enum.js'
 
 /**
  * Implementação TypeORM do GuildInviteRepository.

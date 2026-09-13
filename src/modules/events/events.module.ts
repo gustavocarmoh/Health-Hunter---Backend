@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
-import { EventsService } from './events.service'
-import { EventsController } from './events.controller'
-import { RepositoriesModule } from '../../repositories/repositories.module'
+import { EventsService } from './events.service.js'
+import { EventsController } from './events.controller.js'
+import { RepositoriesModule } from '../../repositories/repositories.module.js'
 
 @Module({
   imports: [RepositoriesModule],

@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: ci
     outputs:
-      image: ${{ steps.build-push.outputs.image }}
+      image: ${{ steps.set-output.outputs.image }}
 
     steps:
       - name: Checkout
@@ -129,9 +129,6 @@ jobs:
         run: |
           echo "image=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
-    outputs:
-      image: ${{ steps.set-output.outputs.image }}
-
   # ──────────────────────────────────────────────────────────────────────────
   # 3. Aprovação manual obrigatória — pausa o pipeline até um reviewer aprovar
   #    CONFIGURAÇÃO OBRIGATÓRIA NO GITHUB:
@@ -144,6 +141,10 @@ jobs:
     name: ⏸ Aguardar aprovação manual para deploy
     runs-on: ubuntu-latest
     needs: build-and-push
+    # ⚠️ DESATIVADO TEMPORARIAMENTE: ainda não fazemos deploy em produção AWS.
+    # Remova a linha abaixo (e a mesma linha no job "deploy") quando o deploy
+    # em PRD estiver liberado.
+    if: false
     environment:
       name: production-gate   # REQUER configuração em GitHub (Settings > Environments)
 
@@ -170,9 +171,16 @@ jobs:
     name: 🚀 Deploy to EC2 (SOMENTE APÓS APROVAÇÃO)
     runs-on: ubuntu-latest
     needs: [build-and-push, await-approval]
+    # ⚠️ DESATIVADO TEMPORARIAMENTE: ainda não fazemos deploy em produção AWS.
+    # Já fica pulado automaticamente por depender de "await-approval" (skipped),
+    # mas mantemos explícito aqui. Remova quando o deploy em PRD estiver liberado.
+    if: false
     environment:
       name: production
-      url: ${{ secrets.APP_URL }}
+      # `environment.url` não aceita o contexto `secrets` — use uma variável
+      # de repositório/ambiente (Settings > Environments > production > Variables)
+      # chamada APP_URL em vez de um Secret.
+      url: ${{ vars.APP_URL }}
 
     steps:
       - name: Configure AWS credentials

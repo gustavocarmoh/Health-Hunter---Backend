@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Delete, Param, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
-import { EventsService } from './events.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
+import { EventsService } from './events.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @ApiTags('events')
 @ApiBearerAuth('access-token')

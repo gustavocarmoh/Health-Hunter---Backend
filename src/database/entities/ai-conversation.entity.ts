@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm'
-import { AiMessageEntity } from './ai-message.entity'
+import { AiMessageEntity } from './ai-message.entity.js'
 
 @Entity('ai_conversations')
 export class AiConversationEntity {

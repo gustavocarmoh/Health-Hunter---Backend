@@ -1,4 +1,4 @@
-import { IBodyMeasurement } from '../../common/interfaces/body-measurement.interface'
+import { IBodyMeasurement } from '../../common/interfaces/body-measurement.interface.js'
 
 export abstract class BodyMeasurementRepository {
   abstract create(data: Omit<IBodyMeasurement, 'id' | 'created_at'>): Promise<IBodyMeasurement>

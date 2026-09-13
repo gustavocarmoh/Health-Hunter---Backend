@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { AuditLogEntity } from '../../database/entities/audit-log.entity'
-import { AuditLogRepository } from '../abstract/audit-log.repository'
-import { IAuditLog } from '../../common/interfaces/audit-log.interface'
+import { AuditLogEntity } from '../../database/entities/audit-log.entity.js'
+import { AuditLogRepository } from '../abstract/audit-log.repository.js'
+import { IAuditLog } from '../../common/interfaces/audit-log.interface.js'
 
 @Injectable()
 export class TypeOrmAuditLogRepository extends AuditLogRepository {

@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsEnum, MaxLength } from 'class-validator'
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { LifestyleType } from '../../../common/enums/lifestyle.enum'
+import { LifestyleType } from '../../../common/enums/lifestyle.enum.js'
 
 export class UpdateHunterProfileDto {
   @ApiPropertyOptional({

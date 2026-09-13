@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from '@nestjs/config'
-import { UserRepository } from '../../../repositories/abstract/user.repository'
-import { IUser } from '../../../common/interfaces/user.interface'
+import { UserRepository } from '../../../repositories/abstract/user.repository.js'
+import { IUser } from '../../../common/interfaces/user.interface.js'
 
 interface JwtPayload {
   sub: string

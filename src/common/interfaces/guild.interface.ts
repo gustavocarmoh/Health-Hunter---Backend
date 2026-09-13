@@ -1,4 +1,4 @@
-import { HunterRank } from '../enums/rank.enum'
+import { HunterRank } from '../enums/rank.enum.js'
 
 /**
  * Representa uma guilda de hunters.

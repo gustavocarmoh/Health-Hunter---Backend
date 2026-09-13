@@ -1,12 +1,12 @@
 import { Controller, Post, UseGuards, Logger, Get, Body, Param, Patch } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { MissionsService } from './missions.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
-import { Role } from '../../common/enums/role.enum'
+import { MissionsService } from './missions.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { RolesGuard } from '../../common/guards/roles.guard.js'
+import { Roles } from '../../common/decorators/roles.decorator.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
+import { Role } from '../../common/enums/role.enum.js'
 
 const logger = new Logger('MissionsController')
 
@@ -21,7 +21,8 @@ export class MissionsController {
 
   @ApiOperation({
     summary: 'Listar missões do usuário',
-    description: 'Retorna todas as missões do usuário autenticado, incluindo diárias e individuais.',
+    description:
+      'Retorna todas as missões do usuário autenticado, incluindo diárias e individuais.',
   })
   @ApiResponse({
     status: 200,

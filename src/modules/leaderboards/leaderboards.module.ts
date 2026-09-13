@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
-import { LeaderboardsService } from './leaderboards.service'
-import { LeaderboardsController } from './leaderboards.controller'
-import { RepositoriesModule } from '../../repositories/repositories.module'
+import { LeaderboardsService } from './leaderboards.service.js'
+import { LeaderboardsController } from './leaderboards.controller.js'
+import { RepositoriesModule } from '../../repositories/repositories.module.js'
 
 @Module({
   imports: [RepositoriesModule],

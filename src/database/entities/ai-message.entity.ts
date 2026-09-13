@@ -5,8 +5,9 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Relation,
 } from 'typeorm'
-import { AiConversationEntity } from './ai-conversation.entity'
+import { AiConversationEntity } from './ai-conversation.entity.js'
 
 export enum MessageRole {
   USER = 'user',
@@ -34,5 +35,5 @@ export class AiMessageEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'conversation_id' })
-  conversation: AiConversationEntity
+  conversation: Relation<AiConversationEntity>
 }

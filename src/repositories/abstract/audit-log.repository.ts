@@ -1,4 +1,4 @@
-import { IAuditLog } from '../../common/interfaces/audit-log.interface'
+import { IAuditLog } from '../../common/interfaces/audit-log.interface.js'
 
 /**
  * Contrato abstrato do repositório de logs de auditoria administrativa.

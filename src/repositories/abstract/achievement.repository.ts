@@ -1,4 +1,4 @@
-import { IAchievement } from '../../common/interfaces/achievement.interface'
+import { IAchievement } from '../../common/interfaces/achievement.interface.js'
 
 export abstract class AchievementRepository {
   abstract findAll(): Promise<IAchievement[]>

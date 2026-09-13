@@ -7,11 +7,11 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger'
-import { HuntersService } from './hunters.service'
-import { UpdateHunterProfileDto } from './dto/update-hunter-profile.dto'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { IUser } from '../../common/interfaces/user.interface'
+import { HuntersService } from './hunters.service.js'
+import { UpdateHunterProfileDto } from './dto/update-hunter-profile.dto.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js'
+import { IUser } from '../../common/interfaces/user.interface.js'
 
 @ApiTags('hunters')
 @ApiBearerAuth('access-token')
@@ -179,7 +179,8 @@ export class HuntersController {
 
   @ApiOperation({
     summary: 'Buscar hunters por nome',
-    description: 'Pesquisa hunters que combinam com o nome fornecido. Mostra se já está seguindo cada um.',
+    description:
+      'Pesquisa hunters que combinam com o nome fornecido. Mostra se já está seguindo cada um.',
   })
   @ApiQuery({ name: 'q', required: true, description: 'Termo de busca (mínimo 2 caracteres)' })
   @ApiQuery({ name: 'limit', required: false, example: 20 })
@@ -204,7 +205,8 @@ export class HuntersController {
 
   @ApiOperation({
     summary: 'Distribuir ponto de atributo',
-    description: 'Distribui um ponto disponível em um atributo específico (strength, intelligence, vitality, sense, agility).',
+    description:
+      'Distribui um ponto disponível em um atributo específico (strength, intelligence, vitality, sense, agility).',
   })
   @ApiResponse({ status: 200, description: 'Ponto distribuído com sucesso.' })
   @ApiResponse({ status: 400, description: 'Não há pontos disponíveis.' })

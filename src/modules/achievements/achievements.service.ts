@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { AchievementRepository } from '../../repositories/abstract/achievement.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { ActivityRepository } from '../../repositories/abstract/activity.repository'
-import { RANK_ORDER } from '../../common/enums/rank.enum'
+import { AchievementRepository } from '../../repositories/abstract/achievement.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
+import { RANK_ORDER } from '../../common/enums/rank.enum.js'
 
 @Injectable()
 export class AchievementsService {

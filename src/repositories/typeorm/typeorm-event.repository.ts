@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { EventEntity } from '../../database/entities/event.entity'
-import { EventParticipantEntity } from '../../database/entities/event-participant.entity'
-import { EventRepository } from '../abstract/event.repository'
-import { IEvent, IEventParticipant } from '../../common/interfaces/event.interface'
+import { EventEntity } from '../../database/entities/event.entity.js'
+import { EventParticipantEntity } from '../../database/entities/event-participant.entity.js'
+import { EventRepository } from '../abstract/event.repository.js'
+import { IEvent, IEventParticipant } from '../../common/interfaces/event.interface.js'
 
 @Injectable()
 export class TypeOrmEventRepository extends EventRepository {

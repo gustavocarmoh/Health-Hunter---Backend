@@ -1,4 +1,4 @@
-import { IGuild } from '../../common/interfaces/guild.interface'
+import { IGuild } from '../../common/interfaces/guild.interface.js'
 
 /**
  * Contrato abstrato para operações de persistência de guildas.

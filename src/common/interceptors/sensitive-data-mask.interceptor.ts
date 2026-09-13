@@ -2,7 +2,7 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Reflector } from '@nestjs/core'
 import { Observable } from 'rxjs'
 import { tap } from 'rxjs/operators'
-import { SENSITIVE_FIELDS_KEY } from '../decorators/sensitive-fields.decorator'
+import { SENSITIVE_FIELDS_KEY } from '../decorators/sensitive-fields.decorator.js'
 
 @Injectable()
 export class SensitiveDataMaskInterceptor implements NestInterceptor {

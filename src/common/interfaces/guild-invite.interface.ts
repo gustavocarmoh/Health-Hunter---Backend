@@ -1,4 +1,4 @@
-import { GuildInviteStatus } from '../enums/guild.enum'
+import { GuildInviteStatus } from '../enums/guild.enum.js'
 
 /**
  * Convite enviado por um líder de guilda a um hunter.

@@ -1,4 +1,4 @@
-import { IStoreItem } from '../../common/interfaces/store-item.interface'
+import { IStoreItem } from '../../common/interfaces/store-item.interface.js'
 
 export abstract class StoreItemRepository {
   abstract findAll(): Promise<IStoreItem[]>

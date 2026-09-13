@@ -1,4 +1,4 @@
-import { HunterRank } from '../../../common/enums/rank.enum'
+import { HunterRank } from '../../../common/enums/rank.enum.js'
 
 /**
  * JSON Schema (AJV draft-07) para validação do payload de criação de desafio.

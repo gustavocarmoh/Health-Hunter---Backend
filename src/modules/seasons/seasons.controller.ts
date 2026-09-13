@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
-import { SeasonsService } from './seasons.service'
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { Role } from '../../common/enums/role.enum'
-import { CreateSeasonDto } from './dto/create-season.dto'
+import { SeasonsService } from './seasons.service.js'
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js'
+import { RolesGuard } from '../../common/guards/roles.guard.js'
+import { Roles } from '../../common/decorators/roles.decorator.js'
+import { Role } from '../../common/enums/role.enum.js'
+import { CreateSeasonDto } from './dto/create-season.dto.js'
 
 @ApiTags('seasons')
 @ApiBearerAuth('access-token')

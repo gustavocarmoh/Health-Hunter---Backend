@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm'
-import { IAchievement } from '../../common/interfaces/achievement.interface'
+import { IAchievement } from '../../common/interfaces/achievement.interface.js'
 
 @Entity('achievements')
 export class AchievementEntity implements IAchievement {

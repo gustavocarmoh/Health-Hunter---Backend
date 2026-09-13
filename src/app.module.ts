@@ -1,33 +1,32 @@
 import { Logger, Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { ThrottlerModule } from '@nestjs/throttler'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { LoggerModule } from 'nestjs-pino'
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
-import { ThrottlerGuard } from '@nestjs/throttler'
+import { RateLimitGuard } from './common/rate-limit/rate-limit.guard.js'
 import { randomUUID } from 'crypto'
 import { IncomingMessage, ServerResponse } from 'http'
-import { AuthModule } from './modules/auth/auth.module'
-import { HuntersModule } from './modules/hunters/hunters.module'
-import { ActivitiesModule } from './modules/activities/activities.module'
-import { EventsModule } from './modules/events/events.module'
-import { LeaderboardsModule } from './modules/leaderboards/leaderboards.module'
-import { AdminModule } from './modules/admin/admin.module'
-import { SeasonsModule } from './modules/seasons/seasons.module'
-import { StoreModule } from './modules/store/store.module'
-import { RankModule } from './common/rank/rank.module'
-import { GuildsModule } from './modules/guilds/guilds.module'
-import { ChallengesModule } from './modules/challenges/challenges.module'
-import { NotificationsModule } from './modules/notifications/notifications.module'
-import { AchievementsModule } from './modules/achievements/achievements.module'
-import { AiModule } from './modules/ai/ai.module'
-import { MissionsModule } from './modules/missions/missions.module'
-import { RepositoriesModule } from './repositories/repositories.module'
-import { RedisCacheModule } from './cache/redis-cache.module'
-import { HealthModule } from './health/health.module'
-import { SchedulerModule } from './modules/scheduler/scheduler.module'
-import { SensitiveDataMaskInterceptor } from './common/interceptors/sensitive-data-mask.interceptor'
+import { AuthModule } from './modules/auth/auth.module.js'
+import { HuntersModule } from './modules/hunters/hunters.module.js'
+import { ActivitiesModule } from './modules/activities/activities.module.js'
+import { EventsModule } from './modules/events/events.module.js'
+import { LeaderboardsModule } from './modules/leaderboards/leaderboards.module.js'
+import { AdminModule } from './modules/admin/admin.module.js'
+import { SeasonsModule } from './modules/seasons/seasons.module.js'
+import { StoreModule } from './modules/store/store.module.js'
+import { RankModule } from './common/rank/rank.module.js'
+import { GuildsModule } from './modules/guilds/guilds.module.js'
+import { ChallengesModule } from './modules/challenges/challenges.module.js'
+import { NotificationsModule } from './modules/notifications/notifications.module.js'
+import { AchievementsModule } from './modules/achievements/achievements.module.js'
+import { AiModule } from './modules/ai/ai.module.js'
+import { MissionsModule } from './modules/missions/missions.module.js'
+import { RepositoriesModule } from './repositories/repositories.module.js'
+import { RedisCacheModule } from './cache/redis-cache.module.js'
+import { HealthModule } from './health/health.module.js'
+import { SchedulerModule } from './modules/scheduler/scheduler.module.js'
+import { SensitiveDataMaskInterceptor } from './common/interceptors/sensitive-data-mask.interceptor.js'
 
 const dbLogger = new Logger('TypeOrmModule')
 
@@ -105,7 +104,6 @@ const dbLogger = new Logger('TypeOrmModule')
         }
       },
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     EventEmitterModule.forRoot({
       wildcard: false,
       delimiter: '.',
@@ -132,7 +130,7 @@ const dbLogger = new Logger('TypeOrmModule')
     MissionsModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_INTERCEPTOR, useClass: SensitiveDataMaskInterceptor },
   ],
 })

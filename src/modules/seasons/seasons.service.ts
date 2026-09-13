@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common'
-import { SeasonRepository } from '../../repositories/abstract/season.repository'
-import { ActivityRepository } from '../../repositories/abstract/activity.repository'
-import { UserRepository } from '../../repositories/abstract/user.repository'
-import { ISeason } from '../../common/interfaces/season.interface'
+import { SeasonRepository } from '../../repositories/abstract/season.repository.js'
+import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
+import { UserRepository } from '../../repositories/abstract/user.repository.js'
+import { ISeason } from '../../common/interfaces/season.interface.js'
 
 @Injectable()
 export class SeasonsService {

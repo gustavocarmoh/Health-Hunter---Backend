@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common'
-import { RankEngineService } from './rank-engine.service'
-import { RepositoriesModule } from '../../repositories/repositories.module'
+import { RankEngineService } from './rank-engine.service.js'
+import { RepositoriesModule } from '../../repositories/repositories.module.js'
 
 /**
  * Módulo global de regras de rank.

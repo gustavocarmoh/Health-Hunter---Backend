@@ -1,4 +1,4 @@
-import { IFollow } from '../../common/interfaces/follow.interface'
+import { IFollow } from '../../common/interfaces/follow.interface.js'
 
 export abstract class FollowRepository {
   abstract follow(followerId: string, followingId: string): Promise<IFollow>

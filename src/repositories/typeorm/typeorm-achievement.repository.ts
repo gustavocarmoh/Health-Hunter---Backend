@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { AchievementEntity } from '../../database/entities/achievement.entity'
-import { AchievementRepository } from '../abstract/achievement.repository'
-import { IAchievement } from '../../common/interfaces/achievement.interface'
+import { AchievementEntity } from '../../database/entities/achievement.entity.js'
+import { AchievementRepository } from '../abstract/achievement.repository.js'
+import { IAchievement } from '../../common/interfaces/achievement.interface.js'
 
 @Injectable()
 export class TypeOrmAchievementRepository extends AchievementRepository {
