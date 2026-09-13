@@ -123,16 +123,23 @@
       "!**/*.module.ts",
       "!**/main.ts",
       "!**/database/migrations/**",
-      "!**/database/data-source.ts"
+      "!**/database/data-source.ts",
+      "!**/database/seeds.ts",
+      "!**/database/entities/**",
+      "!**/repositories/typeorm/**",
+      "!**/dto/**",
+      "!**/*.dto.ts",
+      "!**/*.schema.ts",
+      "!**/common/interfaces/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "coverageThreshold": {
       "global": {
-        "statements": 8,
-        "branches": 6,
-        "functions": 5,
-        "lines": 8
+        "statements": 70,
+        "branches": 60,
+        "functions": 70,
+        "lines": 70
       }
     }
   }
