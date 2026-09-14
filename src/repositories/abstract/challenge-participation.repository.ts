@@ -13,6 +13,5 @@ export abstract class ChallengeParticipationRepository {
 
   abstract complete(id: string): Promise<IChallengeParticipation>
 
-  /** Marca participação como ABANDONED. */
   abstract abandon(id: string): Promise<IChallengeParticipation>
 }

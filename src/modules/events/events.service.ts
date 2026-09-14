@@ -13,15 +13,6 @@ export class EventsService {
     private readonly redisService: RedisService,
   ) {}
 
-  /**
-   * Retorna todos os eventos ativos filtrados pela localização do Hunter.
-   *
-   * Utiliza cache Redis (`events:active`, TTL 60 s). Eventos sem `region_filter`
-   * são visíveis para todos os hunters.
-   *
-   * @param userId - UUID do Hunter autenticado (usado para filtro regional)
-   * @returns Lista de eventos ativos acessíveis ao Hunter
-   */
   async getActiveEvents(userId: string) {
     const cacheKey = 'events:active'
     const cached = await this.redisService.get(cacheKey)
@@ -40,18 +31,6 @@ export class EventsService {
     )
   }
 
-  /**
-   * Inscreve o Hunter em um evento ativo.
-   *
-   * Invalida o cache `events:active` após a inscrição para forçar
-   * a recalculação de vagas/estatísticas na próxima requisição.
-   *
-   * @param eventId - UUID do evento
-   * @param userId - UUID do Hunter
-   * @returns Registro de participação criado
-   * @throws NotFoundException se o evento não existir ou estiver inativo
-   * @throws ConflictException se o Hunter já estiver inscrito
-   */
   async joinEvent(eventId: string, userId: string) {
     const event = await this.eventRepository.findById(eventId)
     if (!event || !event.is_active) {
@@ -68,13 +47,6 @@ export class EventsService {
     return result
   }
 
-  /**
-   * Retorna o leaderboard de participantes de um evento específico.
-   *
-   * @param eventId - UUID do evento
-   * @returns Objeto com `event_id`, `event_title` e lista `leaderboard`
-   * @throws NotFoundException se o evento não for encontrado
-   */
   async getEvent(eventId: string) {
     const event = await this.eventRepository.findById(eventId)
     if (!event) throw new NotFoundException('Event not found.')

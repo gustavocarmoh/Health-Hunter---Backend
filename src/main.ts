@@ -8,13 +8,28 @@ import { AppModule } from './app.module.js'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true })
 
-  // ── Structured logging (Pino) — substitui o logger padrão do NestJS ──────
   app.useLogger(app.get(PinoLogger))
 
-  // ── Security headers (OWASP) ─────────────────────────────────────────────
-  app.use(helmet())
+  // CSP explícita em vez dos defaults do Helmet (que podem mudar entre versões).
+  // 'unsafe-inline' em script/style é necessário só para o Swagger UI; o resto
+  // da API é JSON puro, sem views renderizadas.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [`'self'`],
+          scriptSrc: [`'self'`, `'unsafe-inline'`],
+          styleSrc: [`'self'`, `'unsafe-inline'`],
+          imgSrc: [`'self'`, 'data:'],
+          connectSrc: [`'self'`],
+          objectSrc: [`'none'`],
+          frameAncestors: [`'none'`],
+        },
+      },
+      crossOriginResourcePolicy: { policy: 'same-site' },
+    }),
+  )
 
-  // ── CORS ─────────────────────────────────────────────────────────────────
   const bootstrapLogger = new Logger('Bootstrap')
   const isProduction = process.env.NODE_ENV === 'production'
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').filter(Boolean) ?? []
@@ -31,7 +46,6 @@ async function bootstrap() {
     credentials: true,
   })
 
-  // ── Input validation (OWASP Injection prevention) ────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -43,7 +57,6 @@ async function bootstrap() {
 
   app.get(Reflector)
 
-  // ── Swagger / OpenAPI ─────────────────────────────────────────────────────
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Health Hunter BFF')
     .setDescription(
@@ -103,7 +116,6 @@ Multiplicadores de XP: E=1.0x, D=1.5x, C=2.0x, B=2.5x, A=3.5x, S=5.0x.
     },
   })
 
-  // ── Start ────────────────────────────────────────────────────────────────
   const port = process.env.PORT ?? 3000
   const host = process.env.HOST ?? '0.0.0.0'
   await app.listen(port, host)

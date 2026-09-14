@@ -115,4 +115,28 @@ describe('SchedulerService', () => {
       await expect(service.autoEndExpiredSeasons()).resolves.toBeUndefined()
     })
   })
+
+  describe('purgeSensitiveActivityData', () => {
+    it('should null out GPS/BPM of old activities and delete old body measurements', async () => {
+      mockDataSource.query
+        .mockResolvedValueOnce([[], 3]) // activity_logs affected
+        .mockResolvedValueOnce([[], 5]) // body_measurements deleted
+
+      await service.purgeSensitiveActivityData()
+
+      expect(mockDataSource.query).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('UPDATE activity_logs'),
+      )
+      expect(mockDataSource.query).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining('DELETE FROM body_measurements'),
+      )
+    })
+
+    it('should swallow errors from the query', async () => {
+      mockDataSource.query.mockRejectedValue(new Error('boom'))
+      await expect(service.purgeSensitiveActivityData()).resolves.toBeUndefined()
+    })
+  })
 })

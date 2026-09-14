@@ -11,9 +11,7 @@ export abstract class NotificationRepository {
 
   abstract markAllRead(userId: string): Promise<void>
 
-  /** Marca uma notificação específica do usuário como lida. */
   abstract markOneRead(id: string, userId: string): Promise<void>
 
-  /** Remove todas as notificações do usuário. */
   abstract deleteAllByUserId(userId: string): Promise<void>
 }

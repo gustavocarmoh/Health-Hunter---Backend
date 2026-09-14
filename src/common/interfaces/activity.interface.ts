@@ -10,8 +10,10 @@ export interface IActivityLog {
   distancia_m: number
   duracao_seg: number
   tipo_exercicio: string
-  coordenadas_gps: IGpsCoordinates
-  bpm_medio: number
+  /** Nulo após o expurgo LGPD de retenção (90 dias) — ver SchedulerService.purgeSensitiveActivityData */
+  coordenadas_gps: IGpsCoordinates | null
+  /** Nulo após o expurgo LGPD de retenção (90 dias) — ver SchedulerService.purgeSensitiveActivityData */
+  bpm_medio: number | null
   xp_gained: number
   coins_gained: number
   logged_at: Date

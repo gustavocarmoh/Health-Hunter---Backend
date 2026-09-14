@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import axios from 'axios'
+import { GoogleGenAI } from '@google/genai'
 import { AiConversationRepository } from '../../repositories/abstract/ai-conversation.repository.js'
 import { AiMessageRepository } from '../../repositories/abstract/ai-message.repository.js'
 import { AiConversationEntity } from '../../database/entities/ai-conversation.entity.js'
@@ -10,8 +10,9 @@ import { ChatMessageDto } from './dto/chat-message.dto.js'
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name)
-  private ollamaUrl: string
-  private readonly model = 'neural-chat' // Modelo leve e rápido para fitness
+  private readonly genAI: GoogleGenAI
+  // Modelo gratuito (tier free do Google AI Studio) — rápido o suficiente para chat em tempo real
+  private readonly model: string
 
   private readonly SYSTEM_PROMPT = `Você é um assistente de IA no Health Hunter, um aplicativo gamificado de fitness.
 Você age como um personal trainer e mentor motivador para usuários que buscam melhorar sua saúde e fitness.
@@ -31,8 +32,16 @@ Evite conselhos médicos específicos e sempre recomende consultar um profission
     private readonly conversationRepository: AiConversationRepository,
     private readonly messageRepository: AiMessageRepository,
   ) {
-    this.ollamaUrl = this.configService.get<string>('OLLAMA_HOST') || 'http://ollama:11434'
-    this.logger.log(`Ollama URL: ${this.ollamaUrl}`)
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY')
+    if (!apiKey) {
+      this.logger.warn(
+        'GEMINI_API_KEY não configurada — o mentor de IA falhará ao ser chamado. ' +
+          'Obtenha uma chave gratuita em https://aistudio.google.com/apikey',
+      )
+    }
+    this.model = this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash'
+    this.genAI = new GoogleGenAI({ apiKey: apiKey || '' })
+    this.logger.log(`Gemini model: ${this.model}`)
   }
 
   async chat(userId: string, dto: ChatMessageDto): Promise<AsyncIterable<string>> {
@@ -40,7 +49,6 @@ Evite conselhos médicos específicos e sempre recomende consultar um profission
 
     let conversation: AiConversationEntity
 
-    // Encontrar ou criar conversa
     if (conversation_id) {
       const existing = await this.conversationRepository.findById(conversation_id)
       if (!existing) {
@@ -57,23 +65,19 @@ Evite conselhos médicos específicos e sempre recomende consultar um profission
       })
     }
 
-    // Salvar mensagem do usuário
     await this.messageRepository.create({
       conversation_id: conversation.id,
       role: MessageRole.USER,
       content: message,
     })
 
-    // Recuperar histórico da conversa (últimas 10 mensagens para contexto)
     const messages = await this.messageRepository.findByConversationId(conversation.id)
     const recentMessages = messages.slice(-10)
 
-    // Montar histórico para Ollama
     const history = recentMessages
       .map((msg) => `${msg.role === MessageRole.USER ? 'Usuário' : 'Mentor'}: ${msg.content}`)
       .join('\n')
 
-    // Preparar prompt final
     const fullPrompt = `${this.SYSTEM_PROMPT}
 
 ## Histórico da Conversa
@@ -84,7 +88,6 @@ Usuário: ${message}
 
 Mentor:`
 
-    // Retornar generator que faz streaming
     return this.streamResponse(fullPrompt, conversation.id)
   }
 
@@ -92,41 +95,23 @@ Mentor:`
     let fullResponse = ''
 
     try {
-      const response = await axios.post(
-        `${this.ollamaUrl}/api/generate`,
-        {
-          model: this.model,
-          prompt,
-          stream: true,
+      const stream = await this.genAI.models.generateContentStream({
+        model: this.model,
+        contents: prompt,
+        config: {
           temperature: 0.7,
-          num_predict: 200,
+          maxOutputTokens: 300,
         },
-        {
-          responseType: 'stream',
-          timeout: 60000,
-        },
-      )
+      })
 
-      // Processar stream line-by-line
-      for await (const chunk of response.data) {
-        try {
-          const line = chunk.toString('utf-8').trim()
-          if (!line) continue
-
-          const parsed = JSON.parse(line)
-          if (parsed.response) {
-            fullResponse += parsed.response
-            yield parsed.response
-
-            // Se done === true, stream terminou
-            if (parsed.done) break
-          }
-        } catch {
-          // Ignorar erros de parsing, continuar
+      for await (const chunk of stream) {
+        const text = chunk.text
+        if (text) {
+          fullResponse += text
+          yield text
         }
       }
 
-      // Salvar resposta completa da IA no banco
       if (fullResponse.trim()) {
         await this.messageRepository.create({
           conversation_id: conversationId,
@@ -136,7 +121,7 @@ Mentor:`
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
-      this.logger.error(`Erro ao chamar Ollama: ${errorMsg}`)
+      this.logger.error(`Erro ao chamar Gemini: ${errorMsg}`)
       throw new BadRequestException(`Erro ao gerar resposta da IA: ${errorMsg}`)
     }
   }

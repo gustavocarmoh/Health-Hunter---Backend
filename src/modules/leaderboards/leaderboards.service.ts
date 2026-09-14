@@ -14,14 +14,6 @@ export class LeaderboardsService {
     private readonly redisService: RedisService,
   ) {}
 
-  /**
-   * Retorna o ranking global dos top 100 hunters por XP.
-   *
-   * Cache Redis: chave `leaderboard:global`, TTL 5 minutos.
-   * Invalidado automaticamente sempre que qualquer Hunter completa uma atividade.
-   *
-   * @returns Objeto `{ scope: 'global', leaderboard: RankEntry[] }`
-   */
   async getGlobal() {
     const cacheKey = 'leaderboard:global'
     const cached = await this.redisService.get(cacheKey)
@@ -44,16 +36,6 @@ export class LeaderboardsService {
     return result
   }
 
-  /**
-   * Retorna o ranking regional dos top 100 hunters por XP.
-   *
-   * Filtra por `region_state` e/ou `region_country`.
-   * Cache Redis: chave `leaderboard:regional:{state}:{country}`, TTL 5 minutos.
-   *
-   * @param state - Sigla ou nome do estado (opcional)
-   * @param country - Código ISO do país (opcional)
-   * @returns Objeto `{ scope: 'regional', filters, leaderboard }`
-   */
   async getRegional(state?: string, country?: string) {
     const cacheKey = `leaderboard:regional:${state ?? ''}:${country ?? ''}`
     const cached = await this.redisService.get(cacheKey)
@@ -82,15 +64,6 @@ export class LeaderboardsService {
     return result
   }
 
-  /**
-   * Retorna o ranking local dos top 100 hunters por XP em uma cidade.
-   *
-   * Cache Redis: chave `leaderboard:local:{city}:{state}`, TTL 5 minutos.
-   *
-   * @param city - Nome da cidade (opcional)
-   * @param state - Estado para desambiguação (opcional)
-   * @returns Objeto `{ scope: 'local', filters, leaderboard }`
-   */
   async getLocal(city?: string, state?: string) {
     const cacheKey = `leaderboard:local:${city ?? ''}:${state ?? ''}`
     const cached = await this.redisService.get(cacheKey)
@@ -115,13 +88,6 @@ export class LeaderboardsService {
     return result
   }
 
-  /**
-   * Retorna o ranking global usando cursor pagination (keyset) para evitar OFFSET.
-   *
-   * @param limit  Registros por página (default 20, máx 100)
-   * @param cursor Cursor opaco base64 da página anterior (gerado por este endpoint)
-   * @returns `{ scope, leaderboard, nextCursor }` — nextCursor é null na última página
-   */
   async getGlobalCursor(limit = 20, cursorParam?: string) {
     const cursor = cursorParam ? this.decodeCursor(cursorParam) : undefined
     const { data, nextCursor } = await this.userRepository.findLeaderboardCursor({}, limit, cursor)

@@ -1,14 +1,5 @@
-/**
- * Data Source para a CLI do TypeORM (migrations).
- *
- * Usado exclusivamente pelos scripts npm run migration:*
- * NÃO é importado pelo NestJS — o módulo usa TypeOrmModule.forRootAsync.
- *
- * Uso:
- *   npm run migration:generate -- src/database/migrations/NomeDaMigration
- *   npm run migration:run
- *   npm run migration:revert
- */
+// Usado exclusivamente pelos scripts npm run migration:*. NÃO é importado pelo
+// NestJS — o módulo usa TypeOrmModule.forRootAsync.
 import 'dotenv/config'
 import { DataSource } from 'typeorm'
 
@@ -21,10 +12,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE ?? 'health_hunter',
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 
-  // Entidades: mesmo glob do autoLoadEntities do NestJS
   entities: ['src/database/entities/*.entity.ts'],
-
-  // Migrations geradas e executadas por esta DataSource
   migrations: ['src/database/migrations/*.ts'],
   migrationsTableName: 'typeorm_migrations',
 

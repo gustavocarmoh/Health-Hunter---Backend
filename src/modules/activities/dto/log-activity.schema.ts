@@ -1,12 +1,3 @@
-/**
- * JSON Schema (AJV draft-07) para validação do payload de registro de atividade.
- *
- * Restrições de segurança aplicadas antes do serviço:
- * - Limites numéricos espelham (e reforçam) os da camada class-validator
- * - `coordenadas_gps.altitude` é opcional — objeto rejeitado se tiver campos extras
- * - `tipo_exercicio` com pattern anti-injeção
- * - `bpm_medio` e `distancia_m` com limites absolutos para detecção de payload absurdo
- */
 export const logActivitySchema = {
   type: 'object',
   required: ['distancia_m', 'duracao_seg', 'tipo_exercicio', 'coordenadas_gps', 'bpm_medio'],

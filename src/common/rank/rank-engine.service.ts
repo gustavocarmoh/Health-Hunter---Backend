@@ -14,9 +14,7 @@ import {
 import { IUser } from '../interfaces/user.interface.js'
 
 export interface DecayReport {
-  /** Hunters que perderam XP por inatividade */
   xp_decayed: number
-  /** Hunters rebaixados por mínimo semanal não cumprido */
   demoted: number
   demoted_ids: string[]
 }
@@ -37,21 +35,12 @@ export class RankEngineService {
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   * Calcula o threshold efetivo de XP para avançar ao `nextRank`.
-   *
-   * Aplica o fator de pressão regional: quanto mais hunters ativos na mesma
-   * região já estão naquele rank (ou acima), mais alto é o threshold.
-   *
-   * effective_threshold = base × (1 + α × log₂(1 + competidores_ativos))
-   *
-   * Hunters são considerados "ativos" se registraram ao menos 1 atividade
-   * nos últimos 30 dias.
-   */
+  // effective_threshold = base × (1 + α × log₂(1 + competidores_ativos)),
+  // onde "ativo" = registrou ≥1 atividade nos últimos 30 dias. Quanto mais hunters
+  // ativos já naquele rank (ou acima) na mesma região, mais alto o threshold.
   async getEffectiveThreshold(user: IUser, nextRank: HunterRank): Promise<EffectiveThresholdInfo> {
     const base = RANK_XP_THRESHOLDS[nextRank]
 
-    // Ranks que contam como "competição" = nextRank e acima
     const nextRankIndex = RANK_ORDER.indexOf(nextRank)
     const ranksAtOrAbove = RANK_ORDER.slice(nextRankIndex)
 
@@ -83,13 +72,6 @@ export class RankEngineService {
     }
   }
 
-  /**
-   * Verifica e aplica promoção de rank após um ganho de XP.
-   *
-   * Usa o threshold dinâmico (pressão regional) em vez do threshold fixo.
-   * O evento `hunter.rank_up` agora inclui `regional_threshold` para que
-   * o cliente possa exibir a dificuldade que foi superada.
-   */
   async checkPromotion(user: IUser, newXp: number, eventEmitter: EventEmitter2): Promise<void> {
     const currentIndex = RANK_ORDER.indexOf(user.rank_level)
     if (currentIndex === RANK_ORDER.length - 1) return // Rank S, topo absoluto
@@ -116,25 +98,12 @@ export class RankEngineService {
     }
   }
 
-  /**
-   * Job semanal de degradação de rank — dois mecanismos independentes:
-   *
-   * ① XP DECAY POR INATIVIDADE
-   *    Hunters sem atividade nos últimos 7 dias perdem 5% do XP.
-   *    O XP não cai abaixo do RANK_XP_FLOOR do rank atual.
-   *
-   * ② REBAIXAMENTO POR MÍNIMO SEMANAL
-   *    Cada rank exige um mínimo de XP acumulado por semana.
-   *    Hunters que ficaram abaixo do mínimo por 2 semanas seguidas são
-   *    rebaixados ao rank anterior e têm o XP ajustado para logo abaixo
-   *    do threshold de subida (para que precisem re-ganhar para voltar).
-   *
-   * Retorna um relatório para log/auditoria.
-   */
+  // Dois mecanismos independentes: (1) decay de 5% para hunters sem atividade em
+  // 7 dias, nunca abaixo do RANK_XP_FLOOR do rank atual; (2) rebaixamento para quem
+  // ficou abaixo do mínimo semanal do rank por 2 semanas seguidas.
   async runWeeklyDecay(): Promise<DecayReport> {
     const report: DecayReport = { xp_decayed: 0, demoted: 0, demoted_ids: [] }
 
-    // ── ① Decay de XP por inatividade ─────────────────────────────────────
     const inactiveUsers: { id: string; xp: number; rank_level: HunterRank }[] = await this
       .dataSource.query(`
         SELECT id, xp, rank_level
@@ -151,24 +120,17 @@ export class RankEngineService {
 
     for (const u of inactiveUsers) {
       const floor = RANK_XP_FLOOR[u.rank_level]
-      const decayed = Math.max(floor, Math.floor(u.xp * 0.95)) // 5% decay (era 3%)
+      const decayed = Math.max(floor, Math.floor(u.xp * 0.95))
       if (decayed < u.xp) {
         await this.userRepository.update(u.id, { xp: decayed })
         report.xp_decayed++
       }
     }
 
-    // ── ② Rebaixamento por mínimo semanal (2 semanas seguidas) ────────────
     for (const rank of RANK_ORDER.slice(1)) {
       const minXp = RANK_WEEKLY_MINIMUM_XP[rank]
       if (minXp === 0) continue
 
-      /*
-       * Para cada hunter neste rank, calcula:
-       *   week1 = XP nos últimos 7 dias
-       *   week2 = XP entre 8 e 14 dias atrás
-       * Se ambos < mínimo → rebaixa.
-       */
       const candidates: {
         id: string
         xp: number

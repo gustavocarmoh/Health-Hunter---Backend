@@ -22,7 +22,6 @@ async function seed() {
     const guildRepo = AppDataSource.getRepository(GuildEntity)
     const guildMemberRepo = AppDataSource.getRepository(GuildMemberEntity)
 
-    // 1. Create test users for login testing
     console.log('🌱 Seeding users...')
     const users = []
     for (let i = 1; i <= 5; i++) {
@@ -41,7 +40,6 @@ async function seed() {
       console.log(`  ✅ Created user: hunter${i}@example.com (password: password123)`)
     }
 
-    // 1.5 Create guilds
     console.log('🌱 Seeding guilds...')
     const guilds = []
     const guildData = [
@@ -61,7 +59,6 @@ async function seed() {
       await guildRepo.save(guild)
       guilds.push(guild)
 
-      // Add master as member
       const member = guildMemberRepo.create({
         guild_id: guild.id,
         user_id: users[i].id,
@@ -72,7 +69,6 @@ async function seed() {
       console.log(`  ✅ Created guild: ${guild.name} (Master: ${users[i].name})`)
     }
 
-    // 2. Create challenges
     console.log('🌱 Seeding challenges...')
     const challenges = [
       {
@@ -115,7 +111,6 @@ async function seed() {
     }
     console.log(`  ✅ Created ${challenges.length} challenges`)
 
-    // 3. Create events
     console.log('🌱 Seeding events...')
     const now = new Date()
     const events = [
@@ -154,7 +149,6 @@ async function seed() {
     }
     console.log(`  ✅ Created ${events.length} events`)
 
-    // 4. Create store items
     console.log('🌱 Seeding store items...')
     const items = [
       {

@@ -80,14 +80,14 @@ export class TypeOrmUserRepository extends UserRepository {
   ): Promise<{ data: IUser[]; nextCursor: { xp: number; id: string } | null }> {
     const safeLimit = Math.min(limit, 100)
 
+    // Keyset pagination: (xp < cursor.xp) OR (xp = cursor.xp AND id < cursor.id), garantindo
+    // ordem estável mesmo com empate de XP. Busca 1 a mais para detectar se há próxima página.
     const qb = this.repo
       .createQueryBuilder('u')
       .where('u.is_deleted = false')
-      // Keyset pagination: (xp < cursor.xp) OR (xp = cursor.xp AND id < cursor.id)
-      // Garante ordem estável mesmo com empate de XP
       .orderBy('u.xp', 'DESC')
       .addOrderBy('u.id', 'DESC')
-      .take(safeLimit + 1) // busca 1 a mais para detectar se há próxima página
+      .take(safeLimit + 1)
 
     if (filter.region_state) {
       qb.andWhere('u.region_state = :state', { state: filter.region_state })

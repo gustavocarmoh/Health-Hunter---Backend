@@ -22,7 +22,6 @@ import {
 } from '../../common/enums/guild.enum.js'
 import { RANK_ORDER } from '../../common/enums/rank.enum.js'
 
-/** Dados mínimos para criar uma guilda */
 interface CreateGuildInput {
   name: string
   tag: string
@@ -41,25 +40,10 @@ export class GuildsService {
     private readonly redisService: RedisService,
   ) {}
 
-  /**
-   * Cria uma nova guilda e adiciona o criador como MASTER.
-   *
-   * Regras:
-   * - O hunter precisa ter rank mínimo C (GUILD_CREATE_MIN_RANK).
-   * - Um hunter só pode ser mestre de uma guilda por vez.
-   * - A tag deve ser única no sistema.
-   *
-   * @param userId - UUID do hunter fundador
-   * @param input - Dados da guilda (nome, tag, descrição, emblema)
-   * @returns A guilda criada com o membro MASTER inicial
-   * @throws BadRequestException se o rank for insuficiente
-   * @throws ConflictException se já for mestre de outra guilda
-   */
   async createGuild(userId: string, input: CreateGuildInput) {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
 
-    // Rank mínimo
     const userRankIndex = RANK_ORDER.indexOf(user.rank_level)
     const minRankIndex = RANK_ORDER.indexOf(GUILD_CREATE_MIN_RANK)
     if (userRankIndex < minRankIndex) {
@@ -68,7 +52,6 @@ export class GuildsService {
       )
     }
 
-    // Já é mestre de outra guilda?
     const existing = await this.guildRepository.findByMasterId(userId)
     if (existing) {
       throw new ConflictException(
@@ -76,7 +59,6 @@ export class GuildsService {
       )
     }
 
-    // Hunter já pertence a uma guilda?
     const membership = await this.memberRepository.findByUserId(userId)
     if (membership) {
       throw new ConflictException('Saia da sua guilda atual antes de criar uma nova.')
@@ -91,7 +73,6 @@ export class GuildsService {
       is_public: input.is_public ?? true,
     })
 
-    // Mestre é o primeiro membro
     await this.memberRepository.addMember({
       guild_id: guild.id,
       user_id: userId,
@@ -101,14 +82,6 @@ export class GuildsService {
     return guild
   }
 
-  /**
-   * Lista guildas públicas ativas com pesquisa opcional por nome/tag.
-   *
-   * @param page - Página (1-indexed)
-   * @param limit - Itens por página
-   * @param search - Termo de busca (opcional)
-   * @returns Objeto paginado com guildas e total
-   */
   async listGuilds(page: number, limit: number, search?: string) {
     const { guilds, total } = await this.guildRepository.findAll(page, limit, search)
 
@@ -124,13 +97,6 @@ export class GuildsService {
     }
   }
 
-  /**
-   * Retorna o perfil completo de uma guilda com lista de membros e seus dados públicos.
-   *
-   * @param guildId - UUID da guilda
-   * @returns Perfil da guilda com array de membros enriquecido com dados do hunter
-   * @throws NotFoundException se a guilda não existir ou estiver disbandada
-   */
   async getGuild(guildId: string) {
     const guild = await this.guildRepository.findById(guildId)
     if (!guild) throw new NotFoundException('Guilda não encontrada.')
@@ -159,12 +125,6 @@ export class GuildsService {
     }
   }
 
-  /**
-   * Retorna a guilda do hunter autenticado com seu papel atual.
-   * Retorna null se o hunter não pertencer a nenhuma guilda.
-   *
-   * @param userId - UUID do hunter
-   */
   async getMyGuild(userId: string) {
     const membership = await this.memberRepository.findByUserId(userId)
     if (!membership) return { guild: null, membership: null }
@@ -192,25 +152,13 @@ export class GuildsService {
     }))
   }
 
-  /**
-   * Atualiza dados da guilda. Apenas o MASTER pode executar esta ação.
-   *
-   * Campos editáveis: name, description, emblem, is_public.
-   * A tag não pode ser alterada após a criação.
-   *
-   * @param guildId - UUID da guilda
-   * @param userId - UUID do solicitante (deve ser o MASTER)
-   * @param data - Campos a atualizar
-   * @returns A guilda atualizada
-   * @throws ForbiddenException se o solicitante não for o MASTER
-   */
   async updateGuild(guildId: string, userId: string, data: Record<string, unknown>) {
     const guild = await this.guildRepository.findById(guildId)
     if (!guild) throw new NotFoundException('Guilda não encontrada.')
     if (guild.master_id !== userId)
       throw new ForbiddenException('Apenas o mestre pode editar a guilda.')
 
-    // tag não é editável
+    // A tag não pode ser alterada após a criação.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { tag: _removed, ...safeData } = data as Record<string, unknown> & {
       tag?: unknown
@@ -218,14 +166,6 @@ export class GuildsService {
     return this.guildRepository.update(guildId, safeData as never)
   }
 
-  /**
-   * Dissolve a guilda permanentemente. Apenas o MASTER pode executar.
-   * Remove todos os membros e marca a guilda como disbandada.
-   *
-   * @param guildId - UUID da guilda
-   * @param userId - UUID do solicitante (deve ser o MASTER)
-   * @throws ForbiddenException se o solicitante não for o MASTER
-   */
   async disbandGuild(guildId: string, userId: string) {
     const guild = await this.guildRepository.findById(guildId)
     if (!guild) throw new NotFoundException('Guilda não encontrada.')
@@ -240,21 +180,6 @@ export class GuildsService {
     return { message: `Guilda "${guild.name}" dissolvida.` }
   }
 
-  /**
-   * Envia um convite a um hunter. Apenas MASTER e VICE_MASTER podem convidar.
-   *
-   * Validações:
-   * - Guilda não pode estar na capacidade máxima
-   * - Hunter alvo não pode já pertencer a uma guilda
-   * - Não pode haver convite pendente para o mesmo hunter nesta guilda
-   *
-   * @param guildId - UUID da guilda
-   * @param inviterId - UUID de quem convida
-   * @param targetUserId - UUID do hunter a ser convidado
-   * @returns O convite criado
-   * @throws ForbiddenException se inviterId não tiver permissão
-   * @throws ConflictException se já houver convite pendente ou hunter já tiver guilda
-   */
   async inviteMember(guildId: string, inviterId: string, targetUserId: string) {
     const guild = await this.guildRepository.findById(guildId)
     if (!guild) throw new NotFoundException('Guilda não encontrada.')
@@ -267,7 +192,6 @@ export class GuildsService {
       throw new ForbiddenException('Apenas MASTER ou VICE_MASTER podem convidar membros.')
     }
 
-    // Capacidade máxima
     const count = await this.memberRepository.countByGuildId(guildId)
     if (count >= GUILD_MAX_MEMBERS[guild.rank]) {
       throw new BadRequestException(
@@ -278,11 +202,9 @@ export class GuildsService {
     const target = await this.userRepository.findById(targetUserId)
     if (!target || target.is_deleted) throw new NotFoundException('Hunter não encontrado.')
 
-    // Hunter alvo já tem guilda?
     const existingMembership = await this.memberRepository.findByUserId(targetUserId)
     if (existingMembership) throw new ConflictException('Hunter já pertence a uma guilda.')
 
-    // Convite duplicado?
     const duplicate = await this.inviteRepository.findByGuildAndUser(guildId, targetUserId)
     if (duplicate) throw new ConflictException('Já existe um convite pendente para este hunter.')
 
@@ -297,20 +219,6 @@ export class GuildsService {
     })
   }
 
-  /**
-   * Responde a um convite de guilda (aceitar ou recusar).
-   *
-   * Se aceito:
-   * - O hunter é adicionado como MEMBER
-   * - O convite recebe status ACCEPTED
-   *
-   * @param inviteId - UUID do convite
-   * @param userId - UUID do hunter respondendo (deve ser o convidado)
-   * @param accept - true para aceitar, false para recusar
-   * @returns Mensagem de confirmação e dados do membro (se aceito)
-   * @throws ForbiddenException se o solicitante não for o destinatário do convite
-   * @throws BadRequestException se o convite não estiver pendente ou expirado
-   */
   async respondToInvite(inviteId: string, userId: string, accept: boolean) {
     const invite = await this.inviteRepository.findById(inviteId)
     if (!invite) throw new NotFoundException('Convite não encontrado.')
@@ -329,7 +237,6 @@ export class GuildsService {
       return { message: 'Convite recusado.' }
     }
 
-    // Verificar capacidade antes de aceitar
     const guild = await this.guildRepository.findById(invite.guild_id)
     if (!guild) throw new NotFoundException('A guilda foi dissolvida.')
 
@@ -338,7 +245,6 @@ export class GuildsService {
       throw new BadRequestException('A guilda atingiu a capacidade máxima. Convite inválido.')
     }
 
-    // Verificar se já entrou em outra guilda enquanto o convite estava pendente
     const existing = await this.memberRepository.findByUserId(userId)
     if (existing) throw new ConflictException('Você já pertence a uma guilda.')
 
@@ -352,10 +258,6 @@ export class GuildsService {
     return { message: `Bem-vindo à guilda ${guild.name}!`, membership: member }
   }
 
-  /**
-   * Entra em uma guilda pública diretamente (sem convite).
-   * O hunter não pode estar em outra guilda já.
-   */
   async joinGuild(guildId: string, userId: string) {
     const guild = await this.guildRepository.findById(guildId)
     if (!guild) throw new NotFoundException('Guilda não encontrada.')
@@ -379,13 +281,6 @@ export class GuildsService {
     return { message: 'Entrou na guilda com sucesso.', guild_id: guildId }
   }
 
-  /**
-   * Remove o hunter autenticado de sua guilda.
-   * O MASTER não pode sair sem primeiro transferir a liderança ou dissolver a guilda.
-   *
-   * @param userId - UUID do hunter que quer sair
-   * @throws BadRequestException se o hunter for MASTER
-   */
   async leaveGuild(userId: string) {
     const membership = await this.memberRepository.findByUserId(userId)
     if (!membership) throw new NotFoundException('Você não pertence a nenhuma guilda.')
@@ -399,16 +294,6 @@ export class GuildsService {
     return { message: 'Você saiu da guilda.' }
   }
 
-  /**
-   * Expulsa um membro da guilda.
-   * Apenas MASTER e VICE_MASTER podem expulsar.
-   * VICE_MASTER não pode expulsar o MASTER.
-   *
-   * @param guildId - UUID da guilda
-   * @param kickerId - UUID de quem expulsa
-   * @param targetUserId - UUID do membro a ser expulso
-   * @throws ForbiddenException se o kickerId não tiver permissão ou tentar expulsar MASTER
-   */
   async kickMember(guildId: string, kickerId: string, targetUserId: string) {
     if (kickerId === targetUserId) throw new BadRequestException('Use /leave para sair da guilda.')
 
@@ -434,18 +319,6 @@ export class GuildsService {
     return { message: 'Membro expulso da guilda.' }
   }
 
-  /**
-   * Altera o papel de um membro dentro da guilda.
-   * Apenas o MASTER pode promover/rebaixar membros.
-   * O papel MASTER não pode ser atribuído via este endpoint (use transferência).
-   *
-   * @param guildId - UUID da guilda
-   * @param masterId - UUID do solicitante (deve ser MASTER)
-   * @param targetUserId - UUID do membro a ter o papel alterado
-   * @param newRole - Novo papel (VICE_MASTER, ELITE ou MEMBER)
-   * @throws ForbiddenException se masterId não for MASTER
-   * @throws BadRequestException se tentar atribuir papel MASTER
-   */
   async updateMemberRole(
     guildId: string,
     masterId: string,
@@ -467,15 +340,6 @@ export class GuildsService {
     return this.memberRepository.updateRole(targetMembership.id, newRole)
   }
 
-  /**
-   * Transfere a liderança da guilda para outro membro.
-   * O antigo MASTER passa a ser VICE_MASTER.
-   *
-   * @param guildId - UUID da guilda
-   * @param currentMasterId - UUID do mestre atual
-   * @param newMasterId - UUID do novo mestre
-   * @throws ForbiddenException se currentMasterId não for o MASTER atual
-   */
   async transferLeadership(guildId: string, currentMasterId: string, newMasterId: string) {
     const guild = await this.guildRepository.findById(guildId)
     if (!guild) throw new NotFoundException('Guilda não encontrada.')
@@ -491,7 +355,6 @@ export class GuildsService {
       currentMasterId,
     )
 
-    // Promover novo mestre e rebaixar antigo
     await Promise.all([
       this.memberRepository.updateRole(newMasterMembership.id, GuildMemberRole.MASTER),
       oldMasterMembership
@@ -503,14 +366,6 @@ export class GuildsService {
     return { message: 'Liderança transferida com sucesso.' }
   }
 
-  /**
-   * Retorna o ranking interno da guilda com os maiores contribuidores.
-   * Exibe nome e rank pessoal de cada membro.
-   *
-   * @param guildId - UUID da guilda
-   * @param limit - Máximo de posições no leaderboard (padrão 20)
-   * @returns Array ordenado por contribution_xp DESC
-   */
   async getGuildLeaderboard(guildId: string, limit: number) {
     const guild = await this.guildRepository.findById(guildId)
     if (!guild) throw new NotFoundException('Guilda não encontrada.')
@@ -538,12 +393,6 @@ export class GuildsService {
     }
   }
 
-  /**
-   * Lista todos os convites pendentes endereçados ao hunter autenticado.
-   *
-   * @param userId - UUID do hunter
-   * @returns Array de convites pendentes com dados da guilda
-   */
   async getMyInvites(userId: string) {
     const invites = await this.inviteRepository.findPendingByUserId(userId)
 
@@ -560,17 +409,6 @@ export class GuildsService {
     }))
   }
 
-  /**
-   * Listener do evento `activity.completed`.
-   *
-   * Quando um hunter registra uma atividade:
-   * 1. Verifica se pertence a uma guilda
-   * 2. Incrementa seu contribution_xp pelo XP ganho
-   * 3. Recalcula o rank da guilda com base no novo XP total
-   *    e persiste se houver mudança de rank
-   *
-   * @param payload - Dados do evento: { activity, hunter_id, hunter_rank }
-   */
   @OnEvent('activity.completed')
   async handleActivityContribution(payload: {
     activity: { xp_gained: number }
@@ -581,7 +419,6 @@ export class GuildsService {
 
     await this.memberRepository.addContribution(membership.id, payload.activity.xp_gained)
 
-    // Recalcula e persiste rank da guilda
     const guild = await this.guildRepository.findById(membership.guild_id)
     if (!guild) return
 

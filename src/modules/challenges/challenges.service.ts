@@ -94,7 +94,6 @@ export class ChallengesService {
     }
     if (!challenge) throw new NotFoundException('Challenge not found.')
 
-    // Verify qualifying activity logged after joining
     const activitiesSince = await this.activityRepository.findByUserIdSince(
       userId,
       participation.joined_at,
@@ -111,7 +110,6 @@ export class ChallengesService {
 
     const completed = await this.participationRepository.complete(participation.id)
 
-    // Award XP and coins
     const user = await this.userRepository.findById(userId)
     if (user && !user.is_deleted) {
       await this.userRepository.update(userId, {

@@ -90,7 +90,6 @@ export class MissionsService {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
 
-    // Check if missions were already generated today
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const existingMissions = await this.dailyMissionRepository.findByUserIdAndDate(userId, today)
@@ -101,12 +100,10 @@ export class MissionsService {
       )
     }
 
-    // Shuffle array and take 3-5 random missions
-    const count = Math.floor(Math.random() * 3) + 3 // 3-5
+    const count = Math.floor(Math.random() * 3) + 3
     const shuffled = DAILY_MISSION_TEMPLATES.sort(() => Math.random() - 0.5)
     const selected = shuffled.slice(0, count)
 
-    // Persist missions to database
     const createdMissions = await Promise.all(
       selected.map((m) =>
         this.dailyMissionRepository.create({
@@ -118,7 +115,7 @@ export class MissionsService {
           icon: m.icon,
           done: false,
           daily: true,
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // expires in 24 hours
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
         }),
       ),
     )
@@ -157,7 +154,7 @@ export class MissionsService {
       icon: data.icon || '📋',
       done: false,
       daily: false,
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // expires in 30 days
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     })
 
     return {
@@ -176,21 +173,17 @@ export class MissionsService {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
 
-    // Find mission by id and ensure it belongs to user
     const mission = await this.dailyMissionRepository.findById(missionId)
     if (!mission || mission.user_id !== userId) {
       throw new NotFoundException('Missão não encontrada ou acesso negado.')
     }
 
-    // Calculate XP delta based on status change
     const wasDone = mission.done
     const xpDelta = done && !wasDone ? mission.xp : !done && wasDone ? -mission.xp : 0
 
-    // Update mission in database
     mission.done = done
     const updated = await this.dailyMissionRepository.save(mission)
 
-    // Update user XP if there's a change
     if (xpDelta !== 0) {
       const newXp = Math.max(0, user.xp + xpDelta)
       await this.userRepository.update(userId, { xp: newXp })

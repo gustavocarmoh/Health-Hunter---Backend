@@ -1,13 +1,5 @@
 import { HunterRank } from '../../../common/enums/rank.enum.js'
 
-/**
- * JSON Schema (AJV draft-07) para validação do payload de criação de desafio.
- *
- * - Strings com pattern anti-injeção para title, description e tipo_exercicio
- * - `is_active` é opcional com tipo estritamente boolean (sem coerção)
- * - `start_date` e `end_date` são ISO 8601 date-time (validação de formato via ajv-formats)
- * - Regra de negócio `end_date > start_date` aplicada via keyword `if/then`
- */
 export const createChallengeSchema = {
   type: 'object',
   required: [
@@ -67,16 +59,12 @@ export const createChallengeSchema = {
         'Data/hora de encerramento do desafio (ISO 8601). Deve ser posterior a start_date.',
     },
   },
-  // Valida end_date > start_date quando ambos estiverem presentes
   if: {
     required: ['start_date', 'end_date'],
   },
   then: {
-    // AJV não possui comparação de datas nativa; usamos a keyword `formatExclusiveMaximum`
-    // disponível via ajv-formats com `ajv-keywords`, ou validamos via custom keyword.
-    // Alternativa compatível com ajv + ajv-formats sem plugins extras:
-    // a verificação de ordem de datas é garantida no service (validação de camada de negócio).
-    // O schema garante o formato correto; a restrição de ordem é aplicada no AdminService.
+    // AJV não compara datas nativamente: o schema só garante o formato ISO 8601;
+    // a checagem end_date > start_date é feita no AdminService.
     properties: {
       end_date: {
         type: 'string',

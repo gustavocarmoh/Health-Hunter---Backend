@@ -17,7 +17,7 @@ export class EventParticipantEntity implements IEventParticipant {
   @Column({ type: 'int', default: 0 })
   xp_contributed: number
 
-  /** XP efetivamente creditado no rank do Hunter neste evento (respeitando o cap). */
+  // XP efetivamente creditado no rank do Hunter neste evento (respeitando o cap).
   @Column({ type: 'int', default: 0 })
   rank_xp_credited: number
 

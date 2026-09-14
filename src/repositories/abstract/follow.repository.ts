@@ -9,7 +9,6 @@ export abstract class FollowRepository {
 
   abstract findFollowingIds(userId: string): Promise<string[]>
 
-  /** Retorna IDs de quem segue o usuário. */
   abstract findFollowerIds(userId: string): Promise<string[]>
 
   abstract countFollowing(userId: string): Promise<number>

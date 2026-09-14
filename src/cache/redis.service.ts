@@ -25,9 +25,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     })
   }
 
-  /**
-   * Conecta ao Redis quando o módulo NestJS é inicializado.
-   */
   async onModuleInit(): Promise<void> {
     const host = this.configService.get<string>('REDIS_HOST', 'localhost')
     const port = this.configService.get<number>('REDIS_PORT', 6379)
@@ -43,19 +40,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /**
-   * Encerra a conexão com o Redis quando o módulo NestJS é destruído.
-   */
   async onModuleDestroy(): Promise<void> {
     await this.client.quit()
   }
 
-  /**
-   * Recupera um valor do cache e desserializa o JSON.
-   *
-   * @param key - Chave Redis
-   * @returns Valor desserializado tipado como `T`, ou `null` se ausente ou inválido
-   */
   async get<T>(key: string): Promise<T | null> {
     try {
       const value = await this.client.get(key)
@@ -69,13 +57,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /**
-   * Armazena um valor serializado como JSON com TTL.
-   *
-   * @param key - Chave Redis
-   * @param value - Valor a ser serializado e armazenado
-   * @param ttlSeconds - Tempo de expiração em segundos
-   */
   async set(key: string, value: unknown, ttlSeconds: number): Promise<void> {
     try {
       await this.client.set(key, JSON.stringify(value), 'EX', ttlSeconds)
@@ -84,11 +65,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /**
-   * Remove uma ou mais chaves do cache.
-   *
-   * @param keys - Chaves a remover (no-op se array vazio)
-   */
   async del(...keys: string[]): Promise<void> {
     if (keys.length === 0) return
     try {
@@ -98,14 +74,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /**
-   * Remove todas as chaves que correspondam a um padrão glob do Redis.
-   *
-   * Utiliza cursor SCAN para evitar bloqueio do loop de eventos em bases grandes.
-   * Itera até o cursor retornar `'0'` (fim do keyspace).
-   *
-   * @param pattern - Padrão glob (ex: `leaderboard:*`, `hunter:profile:*`)
-   */
+  // Usa cursor SCAN em vez de KEYS para não bloquear o loop de eventos em bases grandes.
   async invalidatePattern(pattern: string): Promise<void> {
     try {
       let cursor = '0'
@@ -119,22 +88,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /**
-   * Verifica se a conexão Redis está ativa (usado pelo health check).
-   * @throws Error se o Redis não responder
-   */
   async ping(): Promise<void> {
     await this.client.ping()
   }
 
-  /**
-   * Incrementa um contador atômico e define seu TTL na primeira chamada.
-   * Usado para implementar rate limiting em janela fixa.
-   *
-   * @param key - Chave do contador
-   * @param ttlSeconds - Tempo de expiração aplicado apenas quando o contador é criado
-   * @returns Valor do contador após o incremento
-   */
+  // Usado para rate limiting em janela fixa: TTL é setado só na primeira chamada.
   async increment(key: string, ttlSeconds: number): Promise<number> {
     const count = await this.client.incr(key)
     if (count === 1) {

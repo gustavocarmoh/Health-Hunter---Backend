@@ -9,7 +9,9 @@ interface NormalizedActivityPayload {
   distancia_m: number
   duracao_seg: number
   tipo_exercicio: string
-  bpm_medio: number
+  // Nulo só se a atividade já tiver passado pelo expurgo LGPD (não ocorre no fluxo normal,
+  // já que este evento dispara na criação).
+  bpm_medio: number | null
   xp_gained: number
   coins_gained: number
   logged_at: string // ISO 8601
@@ -43,7 +45,7 @@ export class ActivityTelemetryListener {
       distancia_m: parseFloat(activity.distancia_m.toFixed(2)),
       duracao_seg: Math.round(activity.duracao_seg),
       tipo_exercicio: activity.tipo_exercicio.trim().toLowerCase(),
-      bpm_medio: Math.round(activity.bpm_medio),
+      bpm_medio: activity.bpm_medio !== null ? Math.round(activity.bpm_medio) : null,
       xp_gained: Math.round(activity.xp_gained),
       coins_gained: Math.round(activity.coins_gained),
       logged_at: activity.logged_at.toISOString(),

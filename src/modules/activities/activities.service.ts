@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
+import { createHash } from 'crypto'
 import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
 import { UserRepository } from '../../repositories/abstract/user.repository.js'
 import { RedisService } from '../../cache/redis.service.js'
@@ -12,8 +18,8 @@ import { IActivityLog } from '../../common/interfaces/activity.interface.js'
 const XP_BASE_PER_ACTIVITY = 100
 const COINS_BASE_PER_ACTIVITY = 50
 
-// Anti-fraud thresholds
 const MAX_SPEED_KMH = 50 // ~world record sprint pace with margin
+const REPLAY_WINDOW_SECONDS = 60
 
 @Injectable()
 export class ActivitiesService {
@@ -25,29 +31,34 @@ export class ActivitiesService {
     private readonly rankEngineService: RankEngineService,
   ) {}
 
-  /**
-   * Processa e persiste uma atividade física concluída.
-   *
-   * Pipeline:
-   * 1. Valida anti-fraude: velocidade máx. 50 km/h
-   * 2. Calcula XP e coins com multiplicador de rank do Hunter
-   * 3. Persiste o `ActivityLog`
-   * 4. Atualiza XP e coins totais do Hunter
-   * 5. Verifica promoção de rank (XP acumulado ≥ threshold do próximo rank)
-   * 6. Invalida caches: `hunter:profile:{userId}` e padrão `leaderboard:*`
-   * 7. Emite evento assíncrono `activity.completed` via EventEmitter2
-   *
-   * @param userId - UUID do Hunter autenticado
-   * @param dto - Dados da atividade (distância, duração, GPS, BPM...)
-   * @returns Resumo com `activity_id`, `xp_gained`, `coins_gained` e totais
-   * @throws NotFoundException se o Hunter não for encontrado
-   * @throws BadRequestException se a velocidade calculada exceder 50 km/h
-   */
   async logActivity(userId: string, dto: LogActivityDto) {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
 
-    // Anti-fraud: speed check
+    // Rejeita reenvio do mesmo payload exato dentro da janela de tempo
+    // (proteção contra retry duplicado do cliente ou replay de uma requisição capturada)
+    const fingerprint = createHash('sha256')
+      .update(
+        JSON.stringify([
+          userId,
+          dto.distancia_m,
+          dto.duracao_seg,
+          dto.tipo_exercicio,
+          dto.bpm_medio,
+          dto.coordenadas_gps,
+        ]),
+      )
+      .digest('hex')
+    const replayAttempts = await this.redisService.increment(
+      `activity-replay:${fingerprint}`,
+      REPLAY_WINDOW_SECONDS,
+    )
+    if (replayAttempts > 1) {
+      throw new ConflictException(
+        'Duplicate activity submission detected. Please wait before retrying.',
+      )
+    }
+
     const speedKmh = dto.distancia_m / 1000 / (dto.duracao_seg / 3600)
     if (speedKmh > MAX_SPEED_KMH) {
       throw new BadRequestException(
@@ -75,14 +86,12 @@ export class ActivitiesService {
 
     await this.userRepository.update(userId, { xp: newXp, coins: newCoins })
 
-    // Check for rank up (uses dynamic regional-pressure threshold)
+    // Usa threshold dinâmico de pressão regional
     await this.rankEngineService.checkPromotion(user, newXp, this.eventEmitter)
 
-    // Invalidate stale caches
     await this.redisService.del(`hunter:profile:${userId}`)
     await this.redisService.invalidatePattern('leaderboard:*')
 
-    // Async telemetry event
     this.eventEmitter.emit('activity.completed', {
       activity,
       hunter_id: userId,
@@ -98,28 +107,10 @@ export class ActivitiesService {
     }
   }
 
-  /**
-   * Retorna o histórico paginado de atividades de um Hunter.
-   *
-   * @param userId - UUID do Hunter
-   * @param page - Número da página (início em 1)
-   * @param limit - Máximo de itens por página
-   * @returns Lista paginada de `ActivityLog`
-   */
   async getHistory(userId: string, page: number, limit: number) {
     return this.activityRepository.findByUserId(userId, page, limit)
   }
 
-  /**
-   * Gera um resumo agregado das atividades do Hunter.
-   *
-   * Retorna métricas separadas para os períodos de 7 dias (weekly)
-   * e 30 dias (monthly) a partir do momento da chamada.
-   *
-   * @param userId - UUID do Hunter
-   * @returns Objeto com `weekly` e `monthly` contendo distância, duração, BPM médio e XP
-   * @throws NotFoundException se o Hunter não existir ou estiver deletado
-   */
   async getSummary(userId: string) {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
@@ -141,17 +132,11 @@ export class ActivitiesService {
     }
   }
 
-  /**
-   * Agrega métricas de uma lista de atividades.
-   *
-   * @param activities - Array de atividades com campos numéricos
-   * @returns Objeto com `count`, distância, duração, BPM médio e XP total
-   */
   private aggregate(
     activities: {
       distancia_m: number
       duracao_seg: number
-      bpm_medio: number
+      bpm_medio: number | null
       xp_gained: number
     }[],
   ) {
@@ -164,6 +149,11 @@ export class ActivitiesService {
         avg_bpm: 0,
         total_xp: 0,
       }
+    // bpm_medio pode ser nulo em atividades com mais de 90 dias (expurgo LGPD) —
+    // a média considera só as atividades com o dado ainda disponível.
+    const withBpm = activities.filter(
+      (a): a is typeof a & { bpm_medio: number } => a.bpm_medio !== null,
+    )
     return {
       count,
       total_distance_km: parseFloat(
@@ -172,22 +162,14 @@ export class ActivitiesService {
       total_duration_hours: parseFloat(
         (activities.reduce((s, a) => s + a.duracao_seg, 0) / 3600).toFixed(2),
       ),
-      avg_bpm: parseFloat((activities.reduce((s, a) => s + a.bpm_medio, 0) / count).toFixed(1)),
+      avg_bpm:
+        withBpm.length > 0
+          ? parseFloat((withBpm.reduce((s, a) => s + a.bpm_medio, 0) / withBpm.length).toFixed(1))
+          : 0,
       total_xp: activities.reduce((s, a) => s + a.xp_gained, 0),
     }
   }
 
-  /**
-   * Verifica se o Hunter deve subir de rank após ganhar XP.
-   *
-   * Compara o XP total acumulado com o threshold do próximo rank.
-   * Em caso de promoção, atualiza o banco e emite o evento `hunter.rank_up`.
-   * Hunters no Rank S não são processados.
-   *
-   * @param userId - UUID do Hunter
-   * @returns Objeto com informações da atividade
-   * @throws NotFoundException se a atividade não existir ou não pertencer ao Hunter
-   */
   async getActivity(id: string, userId: string) {
     const activity = await this.activityRepository.findById(id)
     if (!activity || activity.user_id !== userId) {
@@ -203,7 +185,6 @@ export class ActivitiesService {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     const activities = await this.activityRepository.findByUserIdSince(userId, weekAgo)
 
-    // Build a map keyed by ISO date string (YYYY-MM-DD)
     const dayMap = new Map<string, { count: number; xp: number; distance_km: number }>()
     for (let i = 6; i >= 0; i--) {
       const d = new Date()
@@ -240,7 +221,6 @@ export class ActivitiesService {
       return { hunter_id: userId, current_streak: 0, best_streak: 0 }
     }
 
-    // Collect unique activity days (UTC date strings)
     const activeDays = new Set(
       activities.map((a) => new Date(a.logged_at).toISOString().slice(0, 10)),
     )
@@ -263,7 +243,6 @@ export class ActivitiesService {
     }
     bestStreak = Math.max(bestStreak, streak)
 
-    // Check if streak is still active (last active day is today or yesterday)
     const today = new Date().toISOString().slice(0, 10)
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
     const lastDay = sortedDays[sortedDays.length - 1]
@@ -289,7 +268,6 @@ export class ActivitiesService {
     if (dto.coordenadas_gps !== undefined) updatedData.coordenadas_gps = dto.coordenadas_gps
     if (dto.bpm_medio !== undefined) updatedData.bpm_medio = dto.bpm_medio
 
-    // If distance or duration changed, recalculate XP based on new values
     if (
       (dto.distancia_m !== undefined || dto.duracao_seg !== undefined) &&
       dto.distancia_m &&
@@ -323,7 +301,6 @@ export class ActivitiesService {
 
     const updated = await this.activityRepository.update(id, updatedData)
 
-    // Invalidate caches
     await this.redisService.del(`hunter:profile:${userId}`)
     await this.redisService.invalidatePattern('leaderboard:*')
 
@@ -339,14 +316,12 @@ export class ActivitiesService {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
 
-    // Reverse the XP and coins gained from this activity
     const newXp = Math.max(0, user.xp - activity.xp_gained)
     const newCoins = Math.max(0, user.coins - activity.coins_gained)
 
     await this.userRepository.update(userId, { xp: newXp, coins: newCoins })
     await this.activityRepository.delete(id)
 
-    // Invalidate caches
     await this.redisService.del(`hunter:profile:${userId}`)
     await this.redisService.invalidatePattern('leaderboard:*')
 

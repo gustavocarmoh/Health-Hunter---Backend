@@ -26,16 +26,6 @@ export class AuthService {
     private readonly redisService: RedisService,
   ) {}
 
-  /**
-   * Registra um novo Hunter no sistema.
-   *
-   * Verifica unicidade do e-mail, armazena senha com bcrypt (salt 12)
-   * e cria a conta com Role `USER` e Rank `E` padrão.
-   *
-   * @param dto - Dados de registro (email, password, name)
-   * @returns Par de tokens JWT: `access_token` (15 min) e `refresh_token` (7 dias)
-   * @throws ConflictException se o e-mail já estiver cadastrado
-   */
   async register(dto: RegisterDto): Promise<{ access_token: string; refresh_token: string }> {
     const existing = await this.userRepository.findByEmail(dto.email)
     if (existing) {
@@ -70,18 +60,9 @@ export class AuthService {
     return this.issueTokens(user)
   }
 
-  /**
-   * Autentica um Hunter com e-mail e senha.
-   *
-   * Contas marcadas como deletadas são rejeitadas com a mesma mensagem
-   * de credenciais inválidas para evitar enumeração de usuários.
-   *
-   * @param dto - Credenciais de login (email, password)
-   * @returns Par de tokens JWT
-   * @throws UnauthorizedException se as credenciais forem inválidas
-   */
   async login(dto: LoginDto): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.userRepository.findByEmail(dto.email)
+    // Mesma mensagem para conta deletada e senha errada, para evitar enumeração de usuários.
     if (!user || user.is_deleted) {
       throw new UnauthorizedException('Invalid credentials.')
     }
@@ -94,16 +75,6 @@ export class AuthService {
     return this.issueTokens(user)
   }
 
-  /**
-   * Renova a sessão utilizando um `refresh_token` válido.
-   *
-   * Verifica a assinatura com `JWT_REFRESH_SECRET` e o claim `type: 'refresh'`
-   * antes de emitir novos tokens.
-   *
-   * @param refreshToken - Token de renovação emitido no login
-   * @returns Novo par de tokens JWT
-   * @throws UnauthorizedException se o token for inválido, expirado ou de tipo errado
-   */
   async refreshToken(
     refreshToken: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
@@ -144,11 +115,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Encerra a sessão do Hunter revogando o refresh token ativo.
-   *
-   * @param refreshToken - Token de renovação a ser revogado
-   */
   async logout(refreshToken: string): Promise<void> {
     try {
       const payload = this.jwtService.verify<{ jti: string }>(refreshToken, {
@@ -161,30 +127,12 @@ export class AuthService {
     }
   }
 
-  /**
-   * Retorna os dados públicos do Hunter a partir do objeto JWT descodificado.
-   *
-   * Remove o campo `password_hash` antes de retornar.
-   *
-   * @param user - Payload do JWT injetado pelo `JwtAuthGuard`
-   * @returns Perfil do Hunter sem dados sensíveis
-   */
   getProfile(user: IUser): Omit<IUser, 'password_hash'> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash: _pw, ...profile } = user
     return profile
   }
 
-  /**
-   * Emite um par de tokens JWT assinados para o usuário informado.
-   *
-   * - `access_token`: asssinado com `JWT_SECRET`, expira em 15 minutos
-   * - `refresh_token`: assinado com `JWT_REFRESH_SECRET`, expira em 7 dias,
-   *   inclui claim `type: 'refresh'` para distinção de tokens
-   *
-   * @param user - Entidade do usuário autenticado
-   * @returns Par de tokens JWT
-   */
   private issueTokens(user: IUser): {
     access_token: string
     refresh_token: string

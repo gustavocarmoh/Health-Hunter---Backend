@@ -12,13 +12,8 @@ import { RATE_LIMIT_KEY, RATE_LIMIT_SKIP_KEY, RateLimitOptions } from './rate-li
 
 const DEFAULT_OPTIONS: RateLimitOptions = { limit: 100, ttl: 60000 }
 
-/**
- * Rate limiting via Redis (janela fixa por rota + IP).
- *
- * Substitui o @nestjs/throttler: o pacote ainda não publicou uma versão
- * compatível com o NestJS v12 (ESM-only) — ele faz `require('@nestjs/common')`
- * internamente, o que quebra em runtime contra um pacote ESM puro.
- */
+// Substitui @nestjs/throttler: o pacote faz require('@nestjs/common') internamente,
+// o que quebra em runtime sob o NestJS v12 (ESM-only) — ainda não tem versão compatível.
 @Injectable()
 export class RateLimitGuard implements CanActivate {
   constructor(

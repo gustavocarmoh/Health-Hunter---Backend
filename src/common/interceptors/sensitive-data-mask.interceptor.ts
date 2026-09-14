@@ -30,15 +30,10 @@ export class SensitiveDataMaskInterceptor implements NestInterceptor {
     if (Object.keys(safeBody).length > 0) {
       const method = request['method']
       const url = (request as { url?: string }).url ?? ''
-      // Only log non-sensitive representation of the request body
       console.log(`[REQUEST] ${method} ${url}`, JSON.stringify(safeBody))
     }
 
-    return next.handle().pipe(
-      tap(() => {
-        // Post-processing hook (extend if needed)
-      }),
-    )
+    return next.handle().pipe(tap())
   }
 
   private maskObject(obj: Record<string, unknown>, fields: string[]): Record<string, unknown> {

@@ -1,9 +1,13 @@
 import { jest } from '@jest/globals'
 
-const mockPost = jest.fn() as jest.Mock<(...args: unknown[]) => Promise<unknown>>
+const mockGenerateContentStream = jest.fn() as jest.Mock<
+  (...args: unknown[]) => Promise<AsyncIterable<{ text?: string }>>
+>
 
-jest.unstable_mockModule('axios', () => ({
-  default: { post: mockPost },
+jest.unstable_mockModule('@google/genai', () => ({
+  GoogleGenAI: jest.fn().mockImplementation(() => ({
+    models: { generateContentStream: mockGenerateContentStream },
+  })),
 }))
 
 const { AiService } = await import('./ai.service.js')
@@ -24,11 +28,11 @@ const mockMessageRepository = {
   findByConversationIdPaginated: asyncMock(),
   deleteByConversationId: asyncMock(),
 }
-const mockConfigService = { get: jest.fn().mockReturnValue('http://ollama:11434') }
+const mockConfigService = { get: jest.fn().mockReturnValue('fake-gemini-api-key') }
 
-async function* fakeOllamaStream(chunks: Array<{ response?: string; done?: boolean }>) {
-  for (const c of chunks) {
-    yield Buffer.from(JSON.stringify(c) + '\n')
+async function* fakeGeminiStream(chunks: string[]) {
+  for (const text of chunks) {
+    yield { text }
   }
 }
 
@@ -43,7 +47,7 @@ describe('AiService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockConfigService.get.mockReturnValue('http://ollama:11434')
+    mockConfigService.get.mockReturnValue('fake-gemini-api-key')
     service = new (AiService as unknown as new (
       ...args: unknown[]
     ) => InstanceType<typeof AiService>)(
@@ -74,7 +78,7 @@ describe('AiService', () => {
       mockConversationRepository.create.mockResolvedValue({ id: 'c1', user_id: 'user-1' })
       mockMessageRepository.create.mockResolvedValue(undefined)
       mockMessageRepository.findByConversationId.mockResolvedValue([])
-      mockPost.mockResolvedValue({ data: fakeOllamaStream([{ response: 'Oi!', done: true }]) })
+      mockGenerateContentStream.mockResolvedValue(fakeGeminiStream(['Oi!']))
 
       const stream = await service.chat('user-1', { message: 'Olá' })
       await drain(stream)
@@ -91,12 +95,7 @@ describe('AiService', () => {
       mockConversationRepository.findById.mockResolvedValue({ id: 'c1', user_id: 'user-1' })
       mockMessageRepository.create.mockResolvedValue(undefined)
       mockMessageRepository.findByConversationId.mockResolvedValue([])
-      mockPost.mockResolvedValue({
-        data: fakeOllamaStream([
-          { response: 'Olá', done: false },
-          { response: '!', done: true },
-        ]),
-      })
+      mockGenerateContentStream.mockResolvedValue(fakeGeminiStream(['Olá', '!']))
 
       const stream = await service.chat('user-1', { conversation_id: 'c1', message: 'oi' })
       const chunks = await drain(stream)
@@ -107,11 +106,11 @@ describe('AiService', () => {
       )
     })
 
-    it('should throw BadRequestException when the Ollama call fails', async () => {
+    it('should throw BadRequestException when the Gemini call fails', async () => {
       mockConversationRepository.findById.mockResolvedValue({ id: 'c1', user_id: 'user-1' })
       mockMessageRepository.create.mockResolvedValue(undefined)
       mockMessageRepository.findByConversationId.mockResolvedValue([])
-      mockPost.mockRejectedValue(new Error('ECONNREFUSED'))
+      mockGenerateContentStream.mockRejectedValue(new Error('quota exceeded'))
 
       const stream = await service.chat('user-1', { conversation_id: 'c1', message: 'oi' })
 

@@ -19,12 +19,6 @@ export class SchedulerService {
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   * Invalida o cache do leaderboard toda segunda-feira às 00:00.
-   *
-   * Garante que o início de semana reflita os XPs mais recentes
-   * sem esperar o TTL expirar naturalmente.
-   */
   @Cron('0 0 * * 1', {
     name: 'leaderboard-cache-reset',
     timeZone: 'America/Sao_Paulo',
@@ -35,12 +29,6 @@ export class SchedulerService {
     this.logger.log('Job: cache de leaderboards invalidado com sucesso.')
   }
 
-  /**
-   * Fecha eventos com end_date expirada todo dia à meia-noite.
-   *
-   * Eventos são marcados como `status = 'closed'` para evitar
-   * que continuem aparecendo como ativos para novos participantes.
-   */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
     name: 'close-expired-events',
     timeZone: 'America/Sao_Paulo',
@@ -63,14 +51,7 @@ export class SchedulerService {
     }
   }
 
-  /**
-   * Remove soft-deleted records com mais de 2 anos (LGPD — art. 16, II).
-   *
-   * Executa toda segunda-feira às 02:30 para evitar horário de pico.
-   * Afeta tabelas com `is_deleted = true` e `deleted_at` antigo.
-   *
-   * LGPD base: prazo de retenção de dados pessoais encerrado.
-   */
+  // Remove soft-deleted hunters com mais de 2 anos — LGPD art. 16, II (prazo de retenção encerrado).
   @Cron('30 2 * * 1', {
     name: 'lgpd-audit-cleanup',
     timeZone: 'America/Sao_Paulo',
@@ -94,21 +75,6 @@ export class SchedulerService {
     }
   }
 
-  /**
-   * Decay semanal de rank — toda segunda-feira às 04:00 (horário de Brasília).
-   *
-   * Executa dois mecanismos via `RankEngineService.runWeeklyDecay()`:
-   *
-   * ① XP DECAY POR INATIVIDADE
-   *    Hunters sem atividade nos últimos 14 dias perdem 3% do XP total.
-   *    O XP nunca cai abaixo do piso do rank atual (RANK_XP_FLOOR).
-   *
-   * ② REBAIXAMENTO POR MÍNIMO SEMANAL
-   *    Cada rank exige um mínimo de XP por semana:
-   *      D → 50 XP | C → 150 | B → 300 | A → 600 | S → 1 000
-   *    Hunters que ficaram abaixo do mínimo por 2 semanas consecutivas
-   *    são rebaixados automaticamente ao rank anterior.
-   */
   @Cron('0 4 * * 1', { name: 'rank-decay', timeZone: 'America/Sao_Paulo' })
   async runRankDecay(): Promise<void> {
     this.logger.log('Job rank-decay: iniciando ciclo de degradação de rank...')
@@ -123,12 +89,6 @@ export class SchedulerService {
     }
   }
 
-  /**
-   * Expira convites de guilda vencidos — todo dia à 01:00.
-   *
-   * Marca como EXPIRED os convites com status PENDING cujo `expires_at`
-   * já passou. Evita que hunters vejam ou respondam convites inválidos.
-   */
   @Cron('0 1 * * *', {
     name: 'expire-guild-invites',
     timeZone: 'America/Sao_Paulo',
@@ -143,12 +103,6 @@ export class SchedulerService {
     }
   }
 
-  /**
-   * Encerra automaticamente temporadas expiradas — todo dia à meia-noite.
-   *
-   * Verifica se há uma season ativa cujo `ends_at` já passou.
-   * Se houver, chama endSeason() para distribuir rewards ao top 3 e desativar.
-   */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
     name: 'auto-end-expired-seasons',
     timeZone: 'America/Sao_Paulo',
@@ -167,9 +121,6 @@ export class SchedulerService {
         await this.dataSource.query(`UPDATE seasons SET is_active = false WHERE id = $1`, [
           season.id,
         ])
-
-        // Aqui você poderia chamar seasonService.endSeason() para distribuir rewards
-        // Por enquanto, apenas marca como inativa
       }
 
       this.logger.log(
@@ -177,6 +128,39 @@ export class SchedulerService {
       )
     } catch (err) {
       this.logger.error(`Job auto-end-expired-seasons falhou: ${(err as Error).message}`)
+    }
+  }
+
+  // Retenção LGPD de 90 dias (RELATORIO-ENTREGA.md, Parte 2.4): activity_logs mantém
+  // distância/duração/XP (não sensíveis) e só zera GPS/BPM; body_measurements é
+  // removido por inteiro pois o registro todo é dado sensível.
+  @Cron('0 3 * * *', { name: 'lgpd-purge-sensitive-data', timeZone: 'America/Sao_Paulo' })
+  async purgeSensitiveActivityData(): Promise<void> {
+    this.logger.log('Job LGPD: expurgando dados sensíveis com mais de 90 dias de retenção...')
+    try {
+      const activityResult = await this.dataSource.query(
+        `UPDATE activity_logs
+         SET    coordenadas_gps = NULL,
+                bpm_medio = NULL
+         WHERE  logged_at < NOW() - INTERVAL '90 days'
+           AND  (coordenadas_gps IS NOT NULL OR bpm_medio IS NOT NULL)`,
+      )
+      const activityCount = Array.isArray(activityResult) ? (activityResult[1] as number) : 0
+
+      const measurementResult = await this.dataSource.query(
+        `DELETE FROM body_measurements
+         WHERE measured_at < NOW() - INTERVAL '90 days'`,
+      )
+      const measurementCount = Array.isArray(measurementResult)
+        ? (measurementResult[1] as number)
+        : 0
+
+      this.logger.log(
+        `Job LGPD: GPS/BPM expurgados de ${activityCount} atividade(s); ` +
+          `${measurementCount} medida(s) corporal(is) removida(s) (retenção de 90 dias).`,
+      )
+    } catch (err) {
+      this.logger.error(`Job lgpd-purge-sensitive-data falhou: ${(err as Error).message}`)
     }
   }
 }

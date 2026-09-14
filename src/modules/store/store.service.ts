@@ -45,7 +45,6 @@ export class StoreService {
       item_id: itemId,
     })
 
-    // Invalidate cached profile
     await this.redisService.del(`hunter:profile:${userId}`)
 
     return {

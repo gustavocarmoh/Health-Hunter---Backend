@@ -18,10 +18,7 @@ export class EventEntity implements IEvent {
   @Column({ type: 'varchar', length: 100, nullable: true, default: null })
   region_filter: string | null
 
-  /**
-   * Teto de XP que cada Hunter pode creditar no rank através deste evento.
-   * null = sem teto.
-   */
+  // Teto de XP que cada Hunter pode creditar no rank através deste evento; null = sem teto.
   @Column({ type: 'int', nullable: true, default: null })
   xp_cap_per_hunter: number | null
 

@@ -19,11 +19,11 @@ export class ActivityLogEntity implements IActivityLog {
   @Column({ length: 100 })
   tipo_exercicio: string
 
-  @Column({ type: 'jsonb' })
-  coordenadas_gps: IGpsCoordinates
+  @Column({ type: 'jsonb', nullable: true })
+  coordenadas_gps: IGpsCoordinates | null
 
-  @Column({ type: 'int' })
-  bpm_medio: number
+  @Column({ type: 'int', nullable: true })
+  bpm_medio: number | null
 
   @Column({ type: 'int' })
   xp_gained: number

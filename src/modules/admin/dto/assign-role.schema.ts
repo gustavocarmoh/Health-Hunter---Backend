@@ -1,10 +1,5 @@
 import { Role } from '../../../common/enums/role.enum.js'
 
-/**
- * JSON Schema (AJV draft-07) para validação do payload de atribuição de Role.
- *
- * O enum de valores é importado do código-fonte para garantir sincronia automática.
- */
 export const assignRoleSchema = {
   type: 'object',
   required: ['role'],

@@ -1,9 +1,4 @@
-/**
- * JSON Schema (AJV draft-07) para validação do payload de renovação de sessão.
- *
- * maxLength 2048 cobre JWTs realistas (header.payload.signature) enquanto
- * rejeita payloads artificialmente grandes.
- */
+// maxLength 2048 cobre JWTs realistas (header.payload.signature) e rejeita payloads artificialmente grandes.
 export const refreshTokenSchema = {
   type: 'object',
   required: ['refresh_token'],

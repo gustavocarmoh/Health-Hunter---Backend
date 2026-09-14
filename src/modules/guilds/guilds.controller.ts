@@ -20,12 +20,7 @@ import { GuildMemberRole } from '../../common/enums/guild.enum.js'
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
 
-  /**
-   * Retorna a guilda do hunter autenticado.
-   * Declarado antes de /:id para evitar conflito de rotas.
-   *
-   * @returns Guilda e membership ou { guild: null } se não pertencer a nenhuma
-   */
+  // Declarada antes de :id abaixo para não ser capturada pela rota curinga.
   @ApiOperation({
     summary: 'Minha guilda',
     description:
@@ -37,11 +32,6 @@ export class GuildsController {
     return this.guildsService.getMyGuild(user.id)
   }
 
-  /**
-   * Lista os membros da guilda do hunter autenticado.
-   *
-   * @returns Array de membros da guilda ou [] se não pertencer a nenhuma
-   */
   @ApiOperation({
     summary: 'Membros da minha guilda',
     description:
@@ -53,12 +43,7 @@ export class GuildsController {
     return this.guildsService.getMyGuildMembers(user.id)
   }
 
-  /**
-   * Lista os convites pendentes endereçados ao hunter autenticado.
-   * Declarado antes de /:id para evitar conflito de rotas.
-   *
-   * @returns Array de convites com dados das guildas
-   */
+  // Declarada antes de :id abaixo para não ser capturada pela rota curinga.
   @ApiOperation({
     summary: 'Meus convites pendentes',
     description: 'Lista os convites de guilda pendentes recebidos pelo hunter autenticado.',
@@ -69,12 +54,6 @@ export class GuildsController {
     return this.guildsService.getMyInvites(user.id)
   }
 
-  /**
-   * Sai da guilda do hunter autenticado.
-   * O MASTER não pode sair sem transferir a liderança antes.
-   *
-   * @returns Confirmação de saída
-   */
   @ApiOperation({
     summary: 'Sair da guilda',
     description:
@@ -90,13 +69,6 @@ export class GuildsController {
     return this.guildsService.leaveGuild(user.id)
   }
 
-  /**
-   * Lista todas as guildas públicas com busca e paginação.
-   *
-   * @param page - Página (padrão 1)
-   * @param limit - Itens por página (padrão 20)
-   * @param search - Termo de busca por nome ou tag
-   */
   @ApiOperation({
     summary: 'Listar guildas públicas',
     description:
@@ -115,11 +87,6 @@ export class GuildsController {
     return this.guildsService.listGuilds(Number(page), Number(limit), search)
   }
 
-  /**
-   * Cria uma nova guilda. Requer rank mínimo C.
-   *
-   * @param body - Dados da guilda (name, tag, description?, emblem?, is_public?)
-   */
   @ApiOperation({
     summary: 'Criar guilda',
     description:
@@ -140,13 +107,7 @@ export class GuildsController {
     return this.guildsService.createGuild(user.id, body as never)
   }
 
-  /**
-   * Responde a um convite de guilda.
-   * Rota estática declarada antes de /:id para evitar conflito.
-   *
-   * @param inviteId - UUID do convite
-   * @param body - { accept: boolean }
-   */
+  // Declarada antes de :id abaixo para não ser capturada pela rota curinga.
   @ApiOperation({
     summary: 'Responder convite',
     description:
@@ -168,11 +129,6 @@ export class GuildsController {
     return this.guildsService.respondToInvite(inviteId, user.id, body.accept)
   }
 
-  /**
-   * Retorna o perfil de uma guilda com seus membros.
-   *
-   * @param id - UUID da guilda
-   */
   @ApiOperation({
     summary: 'Perfil de guilda',
     description:
@@ -186,12 +142,6 @@ export class GuildsController {
     return this.guildsService.getGuild(id)
   }
 
-  /**
-   * Edita dados da guilda. Apenas o MASTER pode executar.
-   *
-   * @param id - UUID da guilda
-   * @param body - Campos editáveis (name, description, emblem, is_public)
-   */
   @ApiOperation({
     summary: 'Editar guilda',
     description:
@@ -209,11 +159,6 @@ export class GuildsController {
     return this.guildsService.updateGuild(id, user.id, body)
   }
 
-  /**
-   * Dissolve a guilda permanentemente. Apenas o MASTER pode executar.
-   *
-   * @param id - UUID da guilda
-   */
   @ApiOperation({
     summary: 'Dissolver guilda',
     description: 'Remove todos os membros e marca a guilda como disbandada. Irreversível.',
@@ -226,12 +171,6 @@ export class GuildsController {
     return this.guildsService.disbandGuild(id, user.id)
   }
 
-  /**
-   * Envia um convite para um hunter. Exige papel MASTER ou VICE_MASTER.
-   *
-   * @param id - UUID da guilda
-   * @param body - { user_id: string } — UUID do hunter a convidar
-   */
   @ApiOperation({
     summary: 'Convidar hunter',
     description:
@@ -255,19 +194,11 @@ export class GuildsController {
     return this.guildsService.inviteMember(id, user.id, body.user_id)
   }
 
-  /**
-   * Entra em uma guilda pública.
-   */
   @Post(':id/join')
   joinGuild(@Param('id') id: string, @CurrentUser() user: IUser) {
     return this.guildsService.joinGuild(id, user.id)
   }
 
-  /**
-   * Sai da guilda. O MASTER deve dissolver a guilda ou transferir a liderança antes.
-   *
-   * @param id - UUID da guilda
-   */
   @ApiOperation({
     summary: 'Sair da guilda',
     description:
@@ -284,12 +215,6 @@ export class GuildsController {
     return this.guildsService.leaveGuild(user.id)
   }
 
-  /**
-   * Expulsa um membro da guilda. Exige papel MASTER ou VICE_MASTER.
-   *
-   * @param id - UUID da guilda
-   * @param userId - UUID do membro a expulsar
-   */
   @ApiOperation({
     summary: 'Expulsar membro',
     description: 'Remove um membro da guilda. VICE_MASTER não pode expulsar o MASTER.',
@@ -303,14 +228,6 @@ export class GuildsController {
     return this.guildsService.kickMember(id, user.id, userId)
   }
 
-  /**
-   * Altera o papel de um membro. Apenas o MASTER pode executar.
-   * O papel MASTER não pode ser atribuído via este endpoint.
-   *
-   * @param id - UUID da guilda
-   * @param userId - UUID do membro alvo
-   * @param body - { role: GuildMemberRole }
-   */
   @ApiOperation({
     summary: 'Alterar papel de membro',
     description:
@@ -334,13 +251,6 @@ export class GuildsController {
     return this.guildsService.updateMemberRole(id, user.id, userId, body.role)
   }
 
-  /**
-   * Transfere a liderança para outro membro.
-   * O mestre atual passa a ser VICE_MASTER.
-   *
-   * @param id - UUID da guilda
-   * @param body - { new_master_id: string }
-   */
   @ApiOperation({
     summary: 'Transferir liderança',
     description:
@@ -362,12 +272,6 @@ export class GuildsController {
     return this.guildsService.transferLeadership(id, user.id, body.new_master_id)
   }
 
-  /**
-   * Retorna o ranking interno de contribuição da guilda.
-   *
-   * @param id - UUID da guilda
-   * @param limit - Máximo de posições (padrão 20)
-   */
   @ApiOperation({
     summary: 'Leaderboard da guilda',
     description: 'Retorna os membros com maior contribution_xp na guilda, em ordem decrescente.',

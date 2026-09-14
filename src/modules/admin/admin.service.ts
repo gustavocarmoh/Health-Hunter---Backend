@@ -23,17 +23,6 @@ export class AdminService {
     private readonly achievementRepository: AchievementRepository,
   ) {}
 
-  /**
-   * Lista todos os usuários com paginação e filtragem opcional por texto.
-   *
-   * A busca é feita em memória sobre `name` e `email` (case-insensitive).
-   * O campo `password_hash` é removido de todos os registros retornados.
-   *
-   * @param page - Página da listagem (início em 1)
-   * @param limit - Itens por página
-   * @param search - Texto parcial para filtrar por nome ou e-mail
-   * @returns Objeto com `total`, `page`, `limit` e array `users`
-   */
   async getUsers(page: number, limit: number, search?: string) {
     const { users, total } = await this.userRepository.findAll(page, limit)
     const filtered = search
@@ -52,15 +41,6 @@ export class AdminService {
     }
   }
 
-  /**
-   * Altera a Role de um usuário e registra a ação no log de auditoria.
-   *
-   * @param targetUserId - UUID do usuário alvo
-   * @param adminId - UUID do administrador que realiza a ação (extraído do JWT)
-   * @param dto - Nova Role a ser atribuída
-   * @returns Mensagem de confirmação e `user_id`
-   * @throws NotFoundException se o usuário alvo não for encontrado
-   */
   async assignRole(targetUserId: string, adminId: string, dto: AssignRoleDto) {
     const user = await this.userRepository.findById(targetUserId)
     if (!user) throw new NotFoundException('Target user not found.')
@@ -79,17 +59,6 @@ export class AdminService {
     return { message: `Role updated to ${dto.role}.`, user_id: targetUserId }
   }
 
-  /**
-   * Altera o Rank de caçador de um Hunter manualmente e registra no log de auditoria.
-   *
-   * Utilizado em eventos especiais ou correções administrativas.
-   *
-   * @param targetUserId - UUID do Hunter alvo
-   * @param adminId - UUID do administrador que realiza a ação
-   * @param dto - Novo Rank a ser atribuído
-   * @returns Mensagem de confirmação e `user_id`
-   * @throws NotFoundException se o usuário alvo não for encontrado
-   */
   async assignRank(targetUserId: string, adminId: string, dto: AssignRankDto) {
     const user = await this.userRepository.findById(targetUserId)
     if (!user) throw new NotFoundException('Target user not found.')
@@ -113,16 +82,7 @@ export class AdminService {
     }
   }
 
-  /**
-   * Cria um novo desafio gamificado (Quest ou Raid).
-   *
-   * Define `is_active` como `true` por padrão se não informado.
-   *
-   * @param dto - Dados do desafio (título, descrição, XP, rank mínimo...)
-   * @returns Entidade `Challenge` persistida
-   */
   async createChallenge(dto: CreateChallengeDto) {
-    // Validação de regra de negócio: end_date deve ser posterior a start_date
     if (dto.start_date && dto.end_date) {
       if (new Date(dto.end_date) <= new Date(dto.start_date)) {
         throw new BadRequestException('end_date deve ser posterior a start_date')
@@ -134,13 +94,6 @@ export class AdminService {
     })
   }
 
-  /**
-   * Retorna o histórico paginado de todas as ações administrativas.
-   *
-   * @param page - Página da listagem
-   * @param limit - Itens por página
-   * @returns Lista paginada de `AuditLog`
-   */
   async getAuditLogs(page: number, limit: number) {
     return this.auditLogRepository.findAll(page, limit)
   }

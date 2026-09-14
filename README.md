@@ -20,7 +20,7 @@ Backend for Frontend (BFF) para o **Health Hunter** — aplicativo de fitness ga
 | class-validator | — | Validação de DTO (NestJS pipe) |
 | Passport JWT | — | Autenticação (access 15 min / refresh 7 dias) |
 | @nestjs/throttler | — | Rate limiting global (100 req/min) |
-| @google/generative-ai | — | IA Mentor com streaming SSE (Gemini) |
+| @google/genai | 2.x | IA Mentor com streaming SSE (Gemini, API gratuita) |
 | Husky | 9.x | Git hooks (pre-commit + commit-msg) |
 | commitlint | 19.x | Conventional Commits (obrigatório) |
 
@@ -104,6 +104,8 @@ Copie `.env.example` para `.env` e preencha os valores:
 | `REDIS_HOST` | Host do Redis | `localhost` |
 | `REDIS_PORT` | Porta do Redis | `6379` |
 | `REDIS_PASSWORD` | Senha do Redis (vazio se não configurado) | — |
+| `GEMINI_API_KEY` | Chave da API do Google Gemini (gratuita, gerar em [aistudio.google.com/apikey](https://aistudio.google.com/apikey)) | — |
+| `GEMINI_MODEL` | Modelo do Gemini usado pelo IA Mentor | `gemini-2.5-flash` |
 
 ---
 
@@ -295,7 +297,7 @@ Push no main
 | `EC2_INSTANCE_ID` | Instance ID do EC2 (ex: `i-0abc123def456789`) — exibido no Output do CloudFormation |
 | `APP_URL` | URL pública da aplicação (ex: `http://IP:3000`) |
 
-Segredos da aplicação (JWT, banco, Redis) ficam no **AWS SSM Parameter Store** em `/health-hunter/prod/` (gratuito).
+Segredos da aplicação (JWT, banco, Redis, `GEMINI_API_KEY`) ficam no **AWS SSM Parameter Store** em `/health-hunter/prod/` (gratuito).
 
 ---
 

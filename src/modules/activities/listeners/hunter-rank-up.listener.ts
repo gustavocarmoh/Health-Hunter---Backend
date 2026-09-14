@@ -17,6 +17,5 @@ export class HunterRankUpListener {
     this.logger.log(
       `[RANK UP] Hunter ${payload.hunter_id} advanced from ${payload.old_rank} to ${payload.new_rank} (Total XP: ${payload.total_xp})`,
     )
-    // Extend here: push notification, badge unlock, etc.
   }
 }

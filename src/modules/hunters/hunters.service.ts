@@ -24,16 +24,6 @@ export class HuntersService {
     private readonly redisService: RedisService,
   ) {}
 
-  /**
-   * Retorna o perfil completo do Hunter sem o hash de senha.
-   *
-   * Primeiro tenta o cache Redis (`hunter:profile:{userId}`, TTL 30 s).
-   * Em caso de miss, busca no banco e popula o cache.
-   *
-   * @param userId - UUID do Hunter
-   * @returns Perfil sem `password_hash`
-   * @throws NotFoundException se o Hunter não existir ou estiver deletado
-   */
   async getProfile(userId: string): Promise<Omit<IUser, 'password_hash'>> {
     const cacheKey = `hunter:profile:${userId}`
     const cached = await this.redisService.get<Omit<IUser, 'password_hash'>>(cacheKey)
@@ -48,16 +38,6 @@ export class HuntersService {
     return profile
   }
 
-  /**
-   * Atualiza campos editáveis do perfil do Hunter.
-   *
-   * Invalida a entrada de cache `hunter:profile:{userId}` após a atualização.
-   *
-   * @param userId - UUID do Hunter
-   * @param dto - Campos a atualizar (parcial)
-   * @returns Perfil atualizado sem `password_hash`
-   * @throws NotFoundException se o Hunter não for encontrado
-   */
   async updateProfile(
     userId: string,
     dto: UpdateHunterProfileDto,
@@ -72,27 +52,12 @@ export class HuntersService {
     return profile
   }
 
-  /**
-   * Anonimiza os dados pessoais do Hunter conforme a LGPD.
-   *
-   * O registro é mantido no banco para preservar integridade referencial
-   * em leaderboards históricos. Campos anonimizados:
-   * - `email` → `deleted_{userId}@anon.invalid`
-   * - `name` → `DELETED_USER`
-   * - `region_state`, `region_country`, `city` → strings vazias
-   * - `is_deleted` → `true`, `anonymized_at` → data atual
-   *
-   * Invalida o cache de perfil do Hunter após a operação.
-   *
-   * @param userId - UUID do Hunter a ser anonimizado
-   * @returns Mensagem de confirmação
-   * @throws NotFoundException se o Hunter não for encontrado
-   */
   async deleteAccount(userId: string): Promise<{ message: string }> {
     const user = await this.userRepository.findById(userId)
     if (!user) throw new NotFoundException('Hunter not found.')
 
-    // LGPD: anonymize PII, keep statistical aggregates
+    // LGPD: anonimiza PII mas mantém o registro para não quebrar integridade
+    // referencial em leaderboards históricos.
     await this.userRepository.update(userId, {
       email: `deleted_${userId}@anon.invalid`,
       name: 'DELETED_USER',
@@ -110,16 +75,6 @@ export class HuntersService {
     }
   }
 
-  /**
-   * Agrega e retorna métricas consolidadas do Hunter.
-   *
-   * Inclui: total de atividades, distância acumulada, duração,
-   * XP e moedas ganhos, BPM médio e breakdown por tipo de exercício.
-   *
-   * @param userId - UUID do Hunter
-   * @returns Objeto com estatísticas agregadas
-   * @throws NotFoundException se o Hunter não existir ou estiver deletado
-   */
   async getStats(userId: string): Promise<Record<string, unknown>> {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
@@ -131,9 +86,13 @@ export class HuntersService {
     const total_duration_seg = activities.reduce((sum, a) => sum + a.duracao_seg, 0)
     const total_xp_earned = activities.reduce((sum, a) => sum + a.xp_gained, 0)
     const total_coins_earned = activities.reduce((sum, a) => sum + a.coins_gained, 0)
+    // bpm_medio pode ser nulo em atividades com mais de 90 dias (expurgo LGPD) —
+    // a média considera só as atividades com o dado ainda disponível.
+    const activitiesWithBpm = activities.filter((a) => a.bpm_medio !== null)
     const avg_bpm =
-      total_activities > 0
-        ? activities.reduce((sum, a) => sum + a.bpm_medio, 0) / total_activities
+      activitiesWithBpm.length > 0
+        ? activitiesWithBpm.reduce((sum, a) => sum + (a.bpm_medio ?? 0), 0) /
+          activitiesWithBpm.length
         : 0
 
     const exercise_breakdown = activities.reduce<Record<string, number>>((acc, a) => {
@@ -253,7 +212,6 @@ export class HuntersService {
       Math.min(limit, 100),
     )
 
-    // Enrich with user name
     const userIds = [...new Set(activities.map((a) => a.user_id))]
     const users = await this.userRepository.findByIds(userIds)
     const userMap = new Map(users.map((u) => [u.id, u]))
@@ -366,13 +324,11 @@ export class HuntersService {
     const user = await this.userRepository.findById(userId)
     if (!user || user.is_deleted) throw new NotFoundException('Hunter not found.')
 
-    // Search by name (case-insensitive, partial match)
     const searchResults = await this.userRepository.findByNameContains(
       query.trim(),
       Math.min(limit, 50),
     )
 
-    // Get current user's following IDs for UI indication
     const followingIds = await this.followRepository.findFollowingIds(userId)
     const followingSet = new Set(followingIds)
 
@@ -380,7 +336,7 @@ export class HuntersService {
       query,
       total: searchResults.length,
       results: searchResults
-        .filter((u) => u.id !== userId) // Exclude self
+        .filter((u) => u.id !== userId)
         .map((u) => ({
           id: u.id,
           name: u.name,

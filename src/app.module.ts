@@ -39,8 +39,6 @@ const dbLogger = new Logger('TypeOrmModule')
       useFactory: (cfg: ConfigService) => ({
         pinoHttp: {
           level: cfg.get('NODE_ENV') === 'production' ? 'info' : 'debug',
-          // Em produção: JSON puro para CloudWatch/Datadog/etc.
-          // Em desenvolvimento: pretty-print legível
           transport:
             cfg.get('NODE_ENV') !== 'production'
               ? {
@@ -48,14 +46,12 @@ const dbLogger = new Logger('TypeOrmModule')
                   options: { colorize: true, singleLine: true },
                 }
               : undefined,
-          // Gera ou propaga x-request-id para correlação de logs
           genReqId: (req: IncomingMessage, res: ServerResponse) => {
             const existing = req.headers['x-request-id']
             const id = (Array.isArray(existing) ? existing[0] : existing) || randomUUID()
             res.setHeader('x-request-id', id)
             return id
           },
-          // Remove campos sensíveis dos logs de request HTTP
           redact: ['req.headers.authorization', 'req.body.password', 'req.body.refresh_token'],
           serializers: {
             req: (req: { method: string; url: string; id?: string }) => ({
@@ -88,18 +84,17 @@ const dbLogger = new Logger('TypeOrmModule')
           password: cfg.get<string>('DB_PASSWORD', 'postgres'),
           database,
           autoLoadEntities: true,
-          // synchronize only in non-production — use migrations in production
           synchronize: cfg.get<string>('NODE_ENV') !== 'production',
           ssl: cfg.get<string>('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
           logging: cfg.get<string>('NODE_ENV') === 'development',
           retryAttempts,
           retryDelay,
-          // Pool de conexões: ajustado para 0.25 vCPU / 512 MB (free tier)
+          // Pool ajustado para 0.25 vCPU / 512 MB (free tier)
           extra: {
-            max: 5, // máximo de conexões simultâneas
-            min: 1, // mínimo mantido em idle
-            idleTimeoutMillis: 30000, // fecha conexões ociosas após 30 s
-            connectionTimeoutMillis: 3000, // timeout de aquisição do pool
+            max: 5,
+            min: 1,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 3000,
           },
         }
       },

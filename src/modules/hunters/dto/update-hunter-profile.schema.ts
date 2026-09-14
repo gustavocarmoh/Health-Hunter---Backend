@@ -1,11 +1,5 @@
 import { LifestyleType } from '../../../common/enums/lifestyle.enum.js'
 
-/**
- * JSON Schema (AJV draft-07) para validação do payload de atualização de perfil.
- *
- * - `minProperties: 1` — rejeita payloads vazios `{}`
- * - Valores de enum importados diretamente para ficar em sincronia com o código
- */
 export const updateHunterProfileSchema = {
   type: 'object',
   additionalProperties: false,

@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import { Test, TestingModule } from '@nestjs/testing'
-import { NotFoundException, BadRequestException } from '@nestjs/common'
+import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { ActivitiesService } from './activities.service.js'
 import { ActivityRepository } from '../../repositories/abstract/activity.repository.js'
@@ -69,6 +69,7 @@ const mockUserRepository = {
 const mockRedisService = {
   del: asyncMock(),
   invalidatePattern: asyncMock(),
+  increment: asyncMock(),
 }
 
 const mockEventEmitter = {
@@ -96,6 +97,7 @@ describe('ActivitiesService', () => {
 
     service = module.get<ActivitiesService>(ActivitiesService)
     jest.clearAllMocks()
+    mockRedisService.increment.mockResolvedValue(1)
   })
 
   // ─── logActivity ─────────────────────────────────────────────────────────
@@ -165,6 +167,14 @@ describe('ActivitiesService', () => {
           duracao_seg: 60,
         }),
       ).rejects.toThrow(BadRequestException)
+    })
+
+    it('should throw ConflictException when the same payload is resubmitted within the replay window', async () => {
+      mockUserRepository.findById.mockResolvedValue(mockUser)
+      mockRedisService.increment.mockResolvedValue(2) // 2nd attempt within the window
+
+      await expect(service.logActivity('user-xyz', validDto)).rejects.toThrow(ConflictException)
+      expect(mockActivityRepository.create).not.toHaveBeenCalled()
     })
 
     it('should apply rank multiplier for non-E ranks', async () => {

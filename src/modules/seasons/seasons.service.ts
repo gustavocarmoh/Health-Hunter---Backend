@@ -61,10 +61,8 @@ export class SeasonsService {
   }
 
   async createSeason(data: Omit<ISeason, 'id' | 'created_at'>) {
-    // Desativar season atual se houver
     await this.seasonRepository.deactivateAll()
 
-    // Criar nova season
     const season = await this.seasonRepository.create({
       ...data,
       is_active: true,
@@ -78,7 +76,6 @@ export class SeasonsService {
     const season = await this.seasonRepository.findById(seasonId)
     if (!season) throw new NotFoundException('Season not found.')
 
-    // Obter top 3 do leaderboard da season
     const topXp = await this.activityRepository.getTopByXpInPeriod(
       season.starts_at,
       season.ends_at,
@@ -87,7 +84,6 @@ export class SeasonsService {
 
     this.logger.log(`Encerrando season ${season.title}. Top 3: ${topXp.length} hunters`)
 
-    // Creditar rewards aos top 3 (ex: 1º = 1000 coins, 2º = 500, 3º = 250)
     const rewards = [1000, 500, 250]
     for (let i = 0; i < topXp.length && i < rewards.length; i++) {
       const hunter = await this.userRepository.findById(topXp[i].user_id)
@@ -98,7 +94,6 @@ export class SeasonsService {
       }
     }
 
-    // Desativar season
     await this.seasonRepository.update(seasonId, { is_active: false })
 
     this.logger.log(`Season ${season.title} encerrada com sucesso`)

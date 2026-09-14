@@ -1,12 +1,6 @@
-/**
- * JSON Schema (AJV draft-07) para validação do payload de registro.
- *
- * Defesa em profundidade aplicada antes da camada NestJS:
- * - `additionalProperties: false` — rejeita campos desconhecidos
- * - `maxLength` restritivo — previne DoS via strings gigantes
- * - `format: email` — rejeita e-mails malformados no nível HTTP
- * - password sem padrão regex — senhas devem aceitar qualquer caractere
- */
+// Defesa em profundidade aplicada antes da camada NestJS (additionalProperties:false,
+// maxLength restritivo contra DoS por strings gigantes). password não tem pattern
+// regex de propósito — senhas devem aceitar qualquer caractere.
 export const registerSchema = {
   type: 'object',
   required: ['email', 'password', 'name'],

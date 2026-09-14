@@ -3,14 +3,7 @@ import Ajv, { ValidateFunction } from 'ajv'
 import addFormats from 'ajv-formats'
 import type { Request, Response, NextFunction } from 'express'
 
-/**
- * Instância AJV compartilhada entre todos os middlewares.
- *
- * Configuração de segurança:
- * - `coerceTypes: false` — rejeita coerção de tipo ("123" não vira 123, prevenindo ataques de coerção)
- * - `allErrors: true`    — coleta todos os erros de uma vez (melhor UX)
- * - `strict: false`      — compatibilidade com JSON Schema draft-07
- */
+// coerceTypes: false por segurança — rejeita coerção de tipo ("123" não vira 123).
 const ajv = new Ajv({
   allErrors: true,
   coerceTypes: false,
@@ -20,25 +13,9 @@ addFormats(ajv)
 
 const logger = new Logger('AjvBodyMiddleware')
 
-/**
- * Fábrica de middleware Express que valida o `req.body` contra um JSON Schema AJV
- * **antes** de qualquer processamento NestJS (pipes, guards, interceptors).
- *
- * Isso garante que payloads malformados, com campos extras ou fora dos limites
- * definidos no schema sejam rejeitados no nível HTTP com 400, sem chegar à camada
- * de negócio.
- *
- * @example
- * ```typescript
- * // No módulo NestJS:
- * consumer
- *   .apply(createAjvMiddleware(registerSchema))
- *   .forRoutes({ path: 'auth/register', method: RequestMethod.POST });
- * ```
- *
- * @param schema - JSON Schema (draft-07) que descreve o payload esperado
- * @returns Função de middleware Express `(req, res, next) => void`
- */
+// Middleware Express que valida req.body contra um JSON Schema AJV antes de
+// qualquer processamento NestJS (pipes, guards, interceptors), rejeitando
+// payloads malformados direto no nível HTTP.
 export function createAjvMiddleware(
   schema: object,
 ): (req: Request, res: Response, next: NextFunction) => void {
